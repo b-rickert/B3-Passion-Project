@@ -1,6 +1,7 @@
 # B3 (Brick by Brick)
 
 ![B3 Logo](https://img.shields.io/badge/B3-Brick%20by%20Brick-orange)
+![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![Java](https://img.shields.io/badge/Java-Spring%20Boot-green)
 ![React Native](https://img.shields.io/badge/React%20Native-Expo-blue)
 ![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey)
@@ -21,6 +22,15 @@ Most fitness apps fail at **adherence**, not features. B3 transforms consistency
 
 ### Key Differentiator
 Unlike generic fitness apps, B3 competes on **behavioral transformation**. BRIX forms relationships, not just recommendations. The brick metaphor creates tangible progress that abstract numbers cannot match.
+
+---
+
+## Documentation
+
+- [Project Specification](docs/specification-sheet.md) - Complete requirements document
+- [Data Model](docs/data-model/data-model.md) - Database schema and relationships
+- [UML Class Diagram](docs/B3-UML.png) - System architecture
+- [UI/UX Wireframes](docs/ui-ux-mockup/) - Mobile screen designs
 
 ---
 
@@ -91,6 +101,16 @@ Unlike generic fitness apps, B3 competes on **behavioral transformation**. BRIX 
 
 ---
 
+## Screenshots
+
+| Home Screen | Progress Screen | BRIX Chat |
+|-------------|-----------------|-----------|
+| *Coming soon* | *Coming soon* | *Coming soon* |
+
+*Screenshots will be added as development progresses*
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -114,27 +134,27 @@ Unlike generic fitness apps, B3 competes on **behavioral transformation**. BRIX 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/B3-Passion-Project.git
+   git clone https://github.com/b-rickert/B3-Passion-Project.git
    cd B3-Passion-Project/backend
    ```
 
 2. **Configure application properties**
-   
+
    Edit `src/main/resources/application.properties`:
    ```properties
    # Server Configuration
    server.port=8080
-   
+
    # SQLite Database
    spring.datasource.url=jdbc:sqlite:b3.db
    spring.datasource.driver-class-name=org.sqlite.JDBC
    spring.jpa.database-platform=org.hibernate.community.dialect.SQLiteDialect
    spring.jpa.hibernate.ddl-auto=update
-   
+
    # OpenAI API
    openai.api.key=your-api-key-here
    openai.api.url=https://api.anthropic.com/v1/messages
-   
+
    # Logging
    logging.level.com.b3=DEBUG
    ```
@@ -146,7 +166,7 @@ Unlike generic fitness apps, B3 competes on **behavioral transformation**. BRIX 
    ```
 
 4. **Verify backend is running**
-   
+
    Server should start on `http://localhost:8080`
 
 ---
@@ -164,7 +184,7 @@ Unlike generic fitness apps, B3 competes on **behavioral transformation**. BRIX 
    ```
 
 3. **Configure environment**
-   
+
    Create `.env` file:
    ```env
    API_BASE_URL=http://localhost:8080/api
@@ -212,11 +232,12 @@ B3-Passion-Project/
 │   └── package.json
 │
 ├── docs/                       # Documentation
-│   ├── one-pager.md
-│   ├── detailed-overview.md
-│   ├── data-model.md
-│   ├── ui-design.md
-│   └── file-structure.md
+│   ├── specification-sheet.md
+│   ├── data-model/
+│   │   ├── data-model.md
+│   │   └── B3-DataModel-Visual.png
+│   ├── ui-ux-mockup/
+│   └── B3-UML.png
 │
 └── README.md
 ```
@@ -227,44 +248,44 @@ B3-Passion-Project/
 
 ### Base URL
 ```
-http://localhost:8080/api
+http://localhost:8080/api/v1
 ```
 
 ### Key Endpoints
 
 #### User Profile (Single Demo User)
 ```
-GET    /api/profile              # Get user profile
-PUT    /api/profile              # Update user preferences (equipment, goals, etc.)
+GET    /api/v1/profile           # Get user profile
+PUT    /api/v1/profile           # Update user preferences (equipment, goals, etc.)
 ```
 
 **Note**: No authentication required. The app uses a single demo user profile (profileId = 1) to store preferences like available equipment, fitness level, and goals. This allows BRIX to personalize coaching without implementing login functionality.
 
 #### Workouts
 ```
-GET    /api/workouts             # List all workouts
-GET    /api/workouts/{id}        # Get workout details
-POST   /api/workouts/sessions    # Start workout session
-PUT    /api/workouts/sessions/{id} # Complete workout session
+GET    /api/v1/workouts          # List all workouts
+GET    /api/v1/workouts/{id}     # Get workout details
+POST   /api/v1/sessions          # Start workout session
+PUT    /api/v1/sessions/{id}     # Complete workout session
+GET    /api/v1/sessions/history  # Get workout history
 ```
 
 #### Daily Logs
 ```
-POST   /api/logs/daily           # Create daily log (energy, mood, stress)
-GET    /api/logs/daily/latest    # Get today's log
+POST   /api/v1/logs              # Create daily log (energy, mood, stress)
+GET    /api/v1/logs/recent       # Get recent logs
 ```
 
 #### Progress
 ```
-GET    /api/progress/bricks      # Get brick wall (30 days)
-GET    /api/progress/stats       # Get user statistics
-GET    /api/progress/milestones  # Get milestones
+GET    /api/v1/bricks?startDate={date}&endDate={date}  # Get brick wall data
+GET    /api/v1/milestones        # Get milestones
 ```
 
 #### BRIX
 ```
-POST   /api/brix/message         # Get BRIX coaching message
-GET    /api/brix/recommendation  # Get workout recommendation
+POST   /api/v1/brix/chat         # Send message to BRIX
+GET    /api/v1/brix/recommendation  # Get workout recommendation
 ```
 
 ---
@@ -296,9 +317,9 @@ npm test
 --zinc-700: #3f3f46  /* Borders */
 
 /* Accents */
---orange-600: #ea580c  /* Primary actions */
---orange-500: #f97316  /* Hover states */
+--orange-500: #f97316  /* Primary actions */
 --amber-500: #f59e0b   /* Achievements */
+--blue-500: #3b82f6    /* Today's focus */
 ```
 
 ### Typography
@@ -324,7 +345,7 @@ Rules are evaluated based on:
 - Historical patterns
 
 ### Database Schema
-See `docs/data-model.md` for complete entity relationship diagram and schema details.
+See [docs/data-model/data-model.md](docs/data-model/data-model.md) for complete entity relationship diagram and schema details.
 
 Key entities:
 - UserProfile (single demo user profile)
@@ -371,19 +392,18 @@ This project is developed as a bootcamp capstone project.
 
 ## Author
 
-**Your Name**
-- GitHub: [@yourusername](https://github.com/b-rickert)
-- LinkedIn: [Your LinkedIn](www.linkedin.com/in/ben-rickert)
+**Ben Rickert**
+- GitHub: [@b-rickert](https://github.com/b-rickert)
+- LinkedIn: [Ben Rickert](https://www.linkedin.com/in/ben-rickert)
+- Bootcamp: Zip Code Wilmington
 
 ---
 
 ## Acknowledgments
 
-- Bootcamp instructors and mentors
+- Zip Code Wilmington bootcamp instructors and mentors
 - OpenAI for BRIX intelligence capabilities
 - React Native and Expo communities
 - Spring Boot ecosystem
 
 ---
-
-**Built one brick at a time.**
