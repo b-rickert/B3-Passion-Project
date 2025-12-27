@@ -36,6 +36,14 @@
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
+	<!-- JUnit Jupiter Parameterized Test Support -->
+	<dependency>
+		<groupId>org.junit.jupiter</groupId>
+		<artifactId>junit-jupiter-params</artifactId>
+		<version>5.10.2</version>
+		<scope>test</scope>
+	</dependency>
+
     <!-- Spring Boot Starter Data JPA -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
