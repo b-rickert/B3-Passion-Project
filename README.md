@@ -165,23 +165,16 @@ The visual brick wall provides **tangible evidence of progress**, transforming a
 
 **Architecture Pattern**
 
-┌─────────────────┐
-│  Mobile Client  │  (React Native + Expo)
-│   (iOS/Android) │
-└────────┬────────┘
-│ REST API
-▼
-┌─────────────────┐
-│  Spring Boot    │  (Java Backend)
-│  ├─ Controllers │  (REST endpoints)
-│  ├─ Services    │  (Business logic, BRIX rules)
-│  └─ Repositories│  (Data access)
-└────────┬────────┘
-│ JPA
-▼
-┌─────────────────┐
-│     SQLite      │  (Embedded database)
-└─────────────────┘
+Three-tier architecture with clear separation of concerns:
+
+- **Presentation Layer:** React Native mobile app (iOS/Android via Expo)
+- **Business Logic Layer:** Spring Boot backend with RESTful API
+  - Controllers: Handle HTTP requests/responses
+  - Services: BRIX intelligence, business rules, recommendations
+  - Repositories: Data access and persistence
+- **Data Layer:** SQLite embedded database
+
+Communication flow: Mobile → REST API → Spring Boot → JPA → SQLite
 
 ### Why This Stack?
 
@@ -276,10 +269,15 @@ The visual brick wall provides **tangible evidence of progress**, transforming a
 1. **Clone the repository**
 ```bash
    git clone https://github.com/b-rickert/B3-Passion-Project.git
-   cd B3-Passion-Project/backend
+   cd B3-Passion-Project
 ```
 
-2. **Configure application properties**
+2. **Navigate to backend directory**
+```bash
+   cd backend
+```
+
+3. **Configure application properties**
 
    Edit `src/main/resources/application.properties`:
 ```properties
@@ -300,13 +298,13 @@ The visual brick wall provides **tangible evidence of progress**, transforming a
    logging.level.com.b3=DEBUG
 ```
 
-3. **Build and run**
+4. **Build and run**
 ```bash
    mvn clean install
    mvn spring-boot:run
 ```
 
-4. **Verify backend is running**
+5. **Verify backend is running**
 
    Server should start on `http://localhost:8080`
 
