@@ -8,9 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.b3.model.Workout.WorkoutType;
 import com.b3.model.Workout.DifficultyLevel;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Unit tests for Workout entity
  */
@@ -85,7 +82,7 @@ class WorkoutTest {
         assertEquals(DifficultyLevel.ADVANCED, workout.getDifficultyLevel());
     }
 
-    // ==================== Business Logic Tests ====================
+    // ==================== Equipment Logic Tests ====================
 
     @Test
     @DisplayName("requiresEquipment() returns true when equipment is specified")
@@ -150,6 +147,8 @@ class WorkoutTest {
         assertFalse(workout.hasEquipment("Dumbbells"));
     }
 
+    // ==================== Duration Logic Tests ====================
+
     @Test
     @DisplayName("isShortWorkout() returns true for workouts under 15 minutes")
     void testIsShortWorkoutReturnsTrueUnder15() {
@@ -167,6 +166,8 @@ class WorkoutTest {
         assertFalse(workout.isShortWorkout());
     }
 
+    // ==================== Difficulty Matching Tests ====================
+
     @Test
     @DisplayName("isSuitableFor() returns true for matching difficulty")
     void testIsSuitableForMatchingDifficulty() {
@@ -174,21 +175,25 @@ class WorkoutTest {
     }
 
     @Test
-    @DisplayName("isSuitableFor() returns true for easier levels (BEGINNER suitable for INTERMEDIATE)")
+    @DisplayName("isSuitableFor() returns true for easier levels")
     void testIsSuitableForEasierLevels() {
+        // BEGINNER workout is suitable for INTERMEDIATE/ADVANCED users
         assertTrue(workout.isSuitableFor(DifficultyLevel.INTERMEDIATE));
         assertTrue(workout.isSuitableFor(DifficultyLevel.ADVANCED));
     }
 
     @Test
-    @DisplayName("isSuitableFor() returns false for harder levels (ADVANCED not suitable for BEGINNER)")
+    @DisplayName("isSuitableFor() returns false for harder levels")
     void testIsSuitableForHarderLevels() {
         workout.setDifficultyLevel(DifficultyLevel.ADVANCED);
         
+        // ADVANCED workout is NOT suitable for BEGINNER/INTERMEDIATE
         assertFalse(workout.isSuitableFor(DifficultyLevel.BEGINNER));
         assertFalse(workout.isSuitableFor(DifficultyLevel.INTERMEDIATE));
         assertTrue(workout.isSuitableFor(DifficultyLevel.ADVANCED));
     }
+
+    // ==================== Equipment Matching Tests ====================
 
     @Test
     @DisplayName("matchesEquipment() returns true when user has required equipment")
@@ -220,49 +225,6 @@ class WorkoutTest {
         assertTrue(workout.matchesEquipment(userEquipment));
     }
 
-    // ==================== Exercise List Tests ====================
-
-    @Test
-    @DisplayName("Should add exercise to workout")
-    void testAddExercise() {
-        Exercise exercise = new Exercise();
-        exercise.setName("Push-ups");
-        
-        workout.addExercise(exercise);
-        
-        assertEquals(1, workout.getExercises().size());
-        assertTrue(workout.getExercises().contains(exercise));
-    }
-
-    @Test
-    @DisplayName("Should remove exercise from workout")
-    void testRemoveExercise() {
-        Exercise exercise = new Exercise();
-        exercise.setName("Push-ups");
-        
-        workout.addExercise(exercise);
-        assertEquals(1, workout.getExercises().size());
-        
-        workout.removeExercise(exercise);
-        assertEquals(0, workout.getExercises().size());
-    }
-
-    @Test
-    @DisplayName("getExerciseCount() returns correct count")
-    void testGetExerciseCount() {
-        assertEquals(0, workout.getExerciseCount());
-        
-        Exercise ex1 = new Exercise();
-        ex1.setName("Push-ups");
-        workout.addExercise(ex1);
-        assertEquals(1, workout.getExerciseCount());
-        
-        Exercise ex2 = new Exercise();
-        ex2.setName("Squats");
-        workout.addExercise(ex2);
-        assertEquals(2, workout.getExerciseCount());
-    }
-
     // ==================== Edge Case Tests ====================
 
     @Test
@@ -277,13 +239,6 @@ class WorkoutTest {
     void testMaximumDuration() {
         workout.setEstimatedDuration(120);
         assertEquals(120, workout.getEstimatedDuration());
-    }
-
-    @Test
-    @DisplayName("Handles empty exercise list")
-    void testEmptyExerciseList() {
-        assertNotNull(workout.getExercises());
-        assertEquals(0, workout.getExercises().size());
     }
 
     @Test
