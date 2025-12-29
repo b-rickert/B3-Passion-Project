@@ -85,6 +85,18 @@ public class UserProfile {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ========================================================================
+    // RELATIONSHIPS
+    // ========================================================================
+
+    /**
+     * One-to-one bidirectional relationship with BehaviorProfile
+     * Cascade ALL: When UserProfile is deleted, BehaviorProfile is also deleted
+     * orphanRemoval: If relationship is broken, BehaviorProfile is deleted
+     */
+    @OneToOne(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private BehaviorProfile behaviorProfile;
+
     // =====================================
     // CONSTRUCTORS
     // =====================================

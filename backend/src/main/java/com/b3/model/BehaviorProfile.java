@@ -11,9 +11,8 @@ import java.util.Objects;
 /**
  * BehaviorProfile entity - BRIX's adaptive intelligence engine
  * 
- * Models user behavior patterns including motivation, consistency, momentum,
- * fatigue, and energy to enable personalized coaching tone adaptation.
- * Each UserProfile has exactly one BehaviorProfile (1:1 relationship).
+ * Tracks user behavior patterns for adaptive coaching.
+ * One-to-one relationship with UserProfile.
  */
 @Entity
 @Table(name = "behavior_profile")
@@ -24,32 +23,23 @@ public class BehaviorProfile {
     // ENUMS
     // ========================================================================
 
-    /**
-     * Motivation state based on consistency patterns
-     */
     public enum MotivationState {
-        MOTIVATED,      // High consistency (≥70%)
-        NEUTRAL,        // Moderate consistency (40-70%)
-        STRUGGLING      // Low consistency (<40%)
+        MOTIVATED,
+        NEUTRAL,
+        STRUGGLING
     }
 
-    /**
-     * Momentum trend showing trajectory direction
-     */
     public enum MomentumTrend {
-        RISING,         // Improving consistency and streaks
-        FALLING,        // Losing rhythm, missing workouts
-        STABLE          // Minimal change
+        RISING,
+        FALLING,
+        STABLE
     }
 
-    /**
-     * Coaching tone adapted by BRIX
-     */
     public enum CoachingTone {
-        ENCOURAGING,    // Default supportive tone
-        CHALLENGING,    // Push harder during strong streaks
-        EMPATHETIC,     // Gentle during struggles or fatigue
-        CELEBRATORY     // Celebrate rising momentum
+        ENCOURAGING,
+        CHALLENGING,
+        EMPATHETIC,
+        CELEBRATORY
     }
 
     // ========================================================================
@@ -61,9 +51,29 @@ public class BehaviorProfile {
     @Column(name = "behavior_id")
     private Long behaviorId;
 
+    // ========================================================================
+    // RELATIONSHIPS
+    // ========================================================================
+
+    /**
+     * One-to-one relationship with UserProfile (owns the foreign key)
+     * This side has @JoinColumn, so behavior_profile table has profile_id FK
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", nullable = false, unique = true)
+    private UserProfile userProfile;
+
+    // ========================================================================
+    // BEHAVIOR METRICS
+    // ========================================================================
+
+    @Column(name = "preferred_workout_time", length = 20)
+    private String preferredWorkoutTime; // Morning/Afternoon/Evening
+
     @NotNull
-    @Column(name = "profile_id", nullable = false, unique = true)
-    private Long profileId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_tone", nullable = false)
+    private CoachingTone currentTone;
 
     @NotNull
     @Min(0)
@@ -111,11 +121,6 @@ public class BehaviorProfile {
     @Column(name = "recent_energy_score", nullable = false)
     private Double recentEnergyScore;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "current_tone", nullable = false)
-    private CoachingTone currentTone;
-
     @Column(name = "last_tone_change")
     private LocalDateTime lastToneChange;
 
@@ -128,8 +133,8 @@ public class BehaviorProfile {
 
     public BehaviorProfile() {}
 
-    public BehaviorProfile(Long profileId) {
-        this.profileId = profileId;
+    public BehaviorProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
         this.consecutiveDays = 0;
         this.longestStreak = 0;
         this.totalBricksLaid = 0;
@@ -163,9 +168,6 @@ public class BehaviorProfile {
     // BUSINESS LOGIC
     // ========================================================================
 
-    /**
-     * Process a completed workout and update all behavioral metrics
-     */
     public void logWorkout(LocalDate today, int daysSinceCreation) {
         updateStreak(today);
         incrementBricks();
@@ -258,117 +260,50 @@ public class BehaviorProfile {
     // GETTERS AND SETTERS
     // ========================================================================
 
-    public Long getBehaviorId() {
-        return behaviorId;
-    }
+    public Long getBehaviorId() { return behaviorId; }
+    public void setBehaviorId(Long behaviorId) { this.behaviorId = behaviorId; }
 
-    public void setBehaviorId(Long behaviorId) {
-        this.behaviorId = behaviorId;
-    }
+    public UserProfile getUserProfile() { return userProfile; }
+    public void setUserProfile(UserProfile userProfile) { this.userProfile = userProfile; }
 
-    public Long getProfileId() {
-        return profileId;
-    }
+    public String getPreferredWorkoutTime() { return preferredWorkoutTime; }
+    public void setPreferredWorkoutTime(String preferredWorkoutTime) { this.preferredWorkoutTime = preferredWorkoutTime; }
 
-    public void setProfileId(Long profileId) {
-        this.profileId = profileId;
-    }
+    public Integer getConsecutiveDays() { return consecutiveDays; }
+    public void setConsecutiveDays(Integer consecutiveDays) { this.consecutiveDays = consecutiveDays; }
 
-    public Integer getConsecutiveDays() {
-        return consecutiveDays;
-    }
+    public Integer getLongestStreak() { return longestStreak; }
+    public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
 
-    public void setConsecutiveDays(Integer consecutiveDays) {
-        this.consecutiveDays = consecutiveDays;
-    }
+    public Integer getTotalBricksLaid() { return totalBricksLaid; }
+    public void setTotalBricksLaid(Integer totalBricksLaid) { this.totalBricksLaid = totalBricksLaid; }
 
-    public Integer getLongestStreak() {
-        return longestStreak;
-    }
+    public Double getConsistencyScore() { return consistencyScore; }
+    public void setConsistencyScore(Double consistencyScore) { this.consistencyScore = consistencyScore; }
 
-    public void setLongestStreak(Integer longestStreak) {
-        this.longestStreak = longestStreak;
-    }
+    public LocalDate getLastWorkoutDate() { return lastWorkoutDate; }
+    public void setLastWorkoutDate(LocalDate lastWorkoutDate) { this.lastWorkoutDate = lastWorkoutDate; }
 
-    public Integer getTotalBricksLaid() {
-        return totalBricksLaid;
-    }
+    public MotivationState getMotivationState() { return motivationState; }
+    public void setMotivationState(MotivationState motivationState) { this.motivationState = motivationState; }
 
-    public void setTotalBricksLaid(Integer totalBricksLaid) {
-        this.totalBricksLaid = totalBricksLaid;
-    }
+    public MomentumTrend getMomentumTrend() { return momentumTrend; }
+    public void setMomentumTrend(MomentumTrend momentumTrend) { this.momentumTrend = momentumTrend; }
 
-    public Double getConsistencyScore() {
-        return consistencyScore;
-    }
+    public Double getFatigueScore() { return fatigueScore; }
+    public void setFatigueScore(Double fatigueScore) { this.fatigueScore = fatigueScore; }
 
-    public void setConsistencyScore(Double consistencyScore) {
-        this.consistencyScore = consistencyScore;
-    }
+    public Double getRecentEnergyScore() { return recentEnergyScore; }
+    public void setRecentEnergyScore(Double recentEnergyScore) { this.recentEnergyScore = recentEnergyScore; }
 
-    public LocalDate getLastWorkoutDate() {
-        return lastWorkoutDate;
-    }
+    public CoachingTone getCurrentTone() { return currentTone; }
+    public void setCurrentTone(CoachingTone currentTone) { this.currentTone = currentTone; }
 
-    public void setLastWorkoutDate(LocalDate lastWorkoutDate) {
-        this.lastWorkoutDate = lastWorkoutDate;
-    }
+    public LocalDateTime getLastToneChange() { return lastToneChange; }
+    public void setLastToneChange(LocalDateTime lastToneChange) { this.lastToneChange = lastToneChange; }
 
-    public MotivationState getMotivationState() {
-        return motivationState;
-    }
-
-    public void setMotivationState(MotivationState motivationState) {
-        this.motivationState = motivationState;
-    }
-
-    public MomentumTrend getMomentumTrend() {
-        return momentumTrend;
-    }
-
-    public void setMomentumTrend(MomentumTrend momentumTrend) {
-        this.momentumTrend = momentumTrend;
-    }
-
-    public Double getFatigueScore() {
-        return fatigueScore;
-    }
-
-    public void setFatigueScore(Double fatigueScore) {
-        this.fatigueScore = fatigueScore;
-    }
-
-    public Double getRecentEnergyScore() {
-        return recentEnergyScore;
-    }
-
-    public void setRecentEnergyScore(Double recentEnergyScore) {
-        this.recentEnergyScore = recentEnergyScore;
-    }
-
-    public CoachingTone getCurrentTone() {
-        return currentTone;
-    }
-
-    public void setCurrentTone(CoachingTone currentTone) {
-        this.currentTone = currentTone;
-    }
-
-    public LocalDateTime getLastToneChange() {
-        return lastToneChange;
-    }
-
-    public void setLastToneChange(LocalDateTime lastToneChange) {
-        this.lastToneChange = lastToneChange;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // ========================================================================
     // OBJECT OVERRIDES
@@ -378,14 +313,12 @@ public class BehaviorProfile {
     public String toString() {
         return "BehaviorProfile{" +
                 "behaviorId=" + behaviorId +
-                ", profileId=" + profileId +
                 ", consecutiveDays=" + consecutiveDays +
                 ", longestStreak=" + longestStreak +
                 ", totalBricksLaid=" + totalBricksLaid +
                 ", consistencyScore=" + consistencyScore +
                 ", motivationState=" + motivationState +
                 ", momentumTrend=" + momentumTrend +
-                ", fatigueScore=" + fatigueScore +
                 ", currentTone=" + currentTone +
                 '}';
     }
