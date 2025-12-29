@@ -23,7 +23,9 @@ class ExerciseTest {
         );
     }
 
-    // ==================== Constructor Tests ====================
+    // =====================================================
+    // Constructor Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should create Exercise with all fields")
@@ -45,7 +47,9 @@ class ExerciseTest {
         assertNull(emptyExercise.getMuscleGroup());
     }
 
-    // ==================== Field Tests ====================
+    // =====================================================
+    // Field Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should set and get exercise name")
@@ -76,7 +80,9 @@ class ExerciseTest {
         assertEquals("https://example.com/newvideo.mp4", exercise.getVideoUrl());
     }
 
-    // ==================== Business Logic Tests ====================
+    // =====================================================
+    // Business Logic Tests
+    // =====================================================
 
     @Test
     @DisplayName("hasVideo() returns true when video URL exists")
@@ -169,7 +175,9 @@ class ExerciseTest {
         assertTrue(nullDescEx.isBodyweight());
     }
 
-    // ==================== Edge Case Tests ====================
+    // =====================================================
+    // Edge Cast Tests
+    // =====================================================
 
     @Test
     @DisplayName("Handles long description text")
@@ -194,7 +202,9 @@ class ExerciseTest {
         assertTrue(exercise.hasVideo());
     }
 
-    // ==================== equals() and hashCode() Tests ====================
+    // =====================================================
+    // equals() and hashCode() Tests
+    // =====================================================
 
     @Test
     @DisplayName("equals() returns true for same exerciseId")
@@ -244,7 +254,9 @@ class ExerciseTest {
         assertEquals(ex1.hashCode(), ex2.hashCode());
     }
 
-    // ==================== toString() Test ====================
+    // =====================================================
+    // toString() Tests
+    // =====================================================
 
     @Test
     @DisplayName("toString() contains key fields")

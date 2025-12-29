@@ -39,7 +39,9 @@ class BehaviorProfileTest {
         behaviorProfile = new BehaviorProfile(userProfile);
     }
 
-    // ==================== Constructor Tests ====================
+    // =====================================================
+    // Constructor Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should create BehaviorProfile with default values")
@@ -66,7 +68,9 @@ class BehaviorProfileTest {
         assertNull(emptyProfile.getUserProfile());
     }
 
-    // ==================== Relationship Tests ====================
+    // =====================================================
+    // Relationship Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should maintain bidirectional relationship with UserProfile")
@@ -77,7 +81,9 @@ class BehaviorProfileTest {
         assertEquals(behaviorProfile, userProfile.getBehaviorProfile());
     }
 
-    // ==================== Enum Tests ====================
+    // =====================================================
+    // Enum Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should handle all MotivationState enum values")
@@ -121,7 +127,9 @@ class BehaviorProfileTest {
         assertEquals(CoachingTone.CELEBRATORY, behaviorProfile.getCurrentTone());
     }
 
-    // ==================== logWorkout() Tests ====================
+    // =====================================================
+    // logWorkout() Tests
+    // =====================================================
 
     @Test
     @DisplayName("logWorkout() starts streak at 1 on first workout")
@@ -182,7 +190,9 @@ class BehaviorProfileTest {
         assertEquals(2, behaviorProfile.getTotalBricksLaid()); // Still increments bricks
     }
 
-    // ==================== Consistency Score Tests ====================
+    // =====================================================
+    // Consistency Score Tests
+    // =====================================================
 
     @Test
     @DisplayName("Consistency score calculates correctly")
@@ -226,7 +236,9 @@ class BehaviorProfileTest {
         assertTrue(behaviorProfile.getConsistencyScore() <= 1.0);
     }
 
-    // ==================== Motivation State Tests ====================
+    // =====================================================
+    // Motivation State Tests
+    // =====================================================
 
     @Test
     @DisplayName("Motivation becomes MOTIVATED at high consistency")
@@ -269,7 +281,9 @@ class BehaviorProfileTest {
         assertEquals(MotivationState.NEUTRAL, behaviorProfile.getMotivationState());
     }
 
-    // ==================== Momentum Trend Tests ====================
+    // =====================================================
+    // Momentum Trend Tests
+    // =====================================================
 
     @Test
     @DisplayName("Momentum becomes RISING with 3+ day streak")
@@ -308,7 +322,9 @@ class BehaviorProfileTest {
         assertEquals(MomentumTrend.STABLE, behaviorProfile.getMomentumTrend());
     }
 
-    // ==================== Coaching Tone Tests ====================
+    // =====================================================
+    // Coaching Tone Tests
+    // =====================================================
 
     @Test
     @DisplayName("Tone becomes EMPATHETIC when struggling")
@@ -368,7 +384,9 @@ class BehaviorProfileTest {
         assertEquals(CoachingTone.ENCOURAGING, behaviorProfile.getCurrentTone());
     }
 
-    // ==================== Edge Case Tests ====================
+    // =====================================================
+    // Edge Case Tests
+    // =====================================================
 
     @Test
     @DisplayName("Handles minimum valid values")

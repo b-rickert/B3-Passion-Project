@@ -28,7 +28,9 @@ class WorkoutTest {
         );
     }
 
-    // ==================== Constructor Tests ====================
+    // =====================================================
+    // Constructor Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should create Workout with all fields")
@@ -51,7 +53,9 @@ class WorkoutTest {
         assertNull(emptyWorkout.getWorkoutType());
     }
 
-    // ==================== Enum Tests ====================
+    // =====================================================
+    // Enum Tests
+    // =====================================================
 
     @Test
     @DisplayName("Should handle all WorkoutType enum values")
@@ -82,7 +86,9 @@ class WorkoutTest {
         assertEquals(DifficultyLevel.ADVANCED, workout.getDifficultyLevel());
     }
 
-    // ==================== Equipment Logic Tests ====================
+    // =====================================================
+    // Equipment Logic Tests
+    // =====================================================
 
     @Test
     @DisplayName("requiresEquipment() returns true when equipment is specified")
@@ -147,7 +153,9 @@ class WorkoutTest {
         assertFalse(workout.hasEquipment("Dumbbells"));
     }
 
-    // ==================== Duration Logic Tests ====================
+    // =====================================================
+    // Duration Logic Tests
+    // =====================================================
 
     @Test
     @DisplayName("isShortWorkout() returns true for workouts under 15 minutes")
@@ -166,7 +174,9 @@ class WorkoutTest {
         assertFalse(workout.isShortWorkout());
     }
 
-    // ==================== Difficulty Matching Tests ====================
+    // =====================================================
+    // Difficulty Matching Tests
+    // =====================================================
 
     @Test
     @DisplayName("isSuitableFor() returns true for matching difficulty")
@@ -193,7 +203,9 @@ class WorkoutTest {
         assertTrue(workout.isSuitableFor(DifficultyLevel.ADVANCED));
     }
 
-    // ==================== Equipment Matching Tests ====================
+    // =====================================================
+    // Equipment Matching Tests
+    // =====================================================
 
     @Test
     @DisplayName("matchesEquipment() returns true when user has required equipment")
@@ -225,7 +237,9 @@ class WorkoutTest {
         assertTrue(workout.matchesEquipment(userEquipment));
     }
 
-    // ==================== Edge Case Tests ====================
+    // =====================================================
+    // Edge Case Tests
+    // =====================================================
 
     @Test
     @DisplayName("Handles minimum valid duration (1 minute)")
@@ -252,7 +266,9 @@ class WorkoutTest {
         assertTrue(workout.hasEquipment("Pull-up Bar"));
     }
 
-    // ==================== equals() and hashCode() Tests ====================
+    // =====================================================
+    // equals() and hashCode() Tests
+    // =====================================================
 
     @Test
     @DisplayName("equals() returns true for same workoutId")
@@ -302,7 +318,9 @@ class WorkoutTest {
         assertEquals(workout1.hashCode(), workout2.hashCode());
     }
 
-    // ==================== toString() Test ====================
+    // =====================================================
+    // toString() Tests
+    // =====================================================
 
     @Test
     @DisplayName("toString() contains key fields")
