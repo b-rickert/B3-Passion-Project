@@ -9,20 +9,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * BehaviorProfile
- *
- * This is BRIX’s adaptive intelligence engine.
- * It models:
- * - Motivation
- * - Consistency
- * - Behavioral trends
- * - Momentum (upward, downward, neutral)
- * - Fatigue & energy patterns
- * - Coaching tone logic
- * - Workout streaks
- *
- * Each user has exactly one BehaviorProfile (1:1 with UserProfile).
- * BRIX reads this profile to personalize coaching messages and workout guidance.
+ * BehaviorProfile entity - BRIX's adaptive intelligence engine
+ * 
+ * Models user behavior patterns including motivation, consistency, momentum,
+ * fatigue, and energy to enable personalized coaching tone adaptation.
+ * Each UserProfile has exactly one BehaviorProfile (1:1 relationship).
  */
 @Entity
 @Table(name = "behavior_profile")
@@ -30,43 +21,39 @@ import java.util.Objects;
 public class BehaviorProfile {
 
     // ========================================================================
-    // ENUMS (Psychology + Coaching)
+    // ENUMS
     // ========================================================================
 
     /**
-     * Motivation State (high-level interpretation of user consistency).
-     * BRIX uses this to determine coaching direction.
+     * Motivation state based on consistency patterns
      */
     public enum MotivationState {
-        MOTIVATED,      // Consistent, strong patterns
-        NEUTRAL,        // Moderate performance
-        STRUGGLING      // Low consistency or discouragement signals
+        MOTIVATED,      // High consistency (≥70%)
+        NEUTRAL,        // Moderate consistency (40-70%)
+        STRUGGLING      // Low consistency (<40%)
     }
 
     /**
-     * Momentum shows the direction the user is trending.
-     * Unlike motivation (snapshot), momentum measures trajectory.
+     * Momentum trend showing trajectory direction
      */
     public enum MomentumTrend {
-        RISING,         // Improving consistency and streak behavior
+        RISING,         // Improving consistency and streaks
         FALLING,        // Losing rhythm, missing workouts
-        STABLE          // Minimal movement either direction
+        STABLE          // Minimal change
     }
 
     /**
-     * Coaching tone used by BRIX.
-     * Adapted automatically based on motivation + momentum + fatigue.
+     * Coaching tone adapted by BRIX
      */
     public enum CoachingTone {
-        ENCOURAGING,
-        CHALLENGING,
-        EMPATHETIC,
-        CELEBRATORY
+        ENCOURAGING,    // Default supportive tone
+        CHALLENGING,    // Push harder during strong streaks
+        EMPATHETIC,     // Gentle during struggles or fatigue
+        CELEBRATORY     // Celebrate rising momentum
     }
 
-
     // ========================================================================
-    // FIELDS (Database Columns)
+    // FIELDS
     // ========================================================================
 
     @Id
@@ -74,14 +61,9 @@ public class BehaviorProfile {
     @Column(name = "behavior_id")
     private Long behaviorId;
 
-    /**
-     * Foreign-key to UserProfile (1:1 relationship).
-     */
     @NotNull
     @Column(name = "profile_id", nullable = false, unique = true)
     private Long profileId;
-
-    // ---------------- Core workout metrics ----------------
 
     @NotNull
     @Min(0)
@@ -107,8 +89,6 @@ public class BehaviorProfile {
     @Column(name = "last_workout_date")
     private LocalDate lastWorkoutDate;
 
-    // ---------------- Psychological layer ----------------
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "motivation_state", nullable = false)
@@ -119,28 +99,17 @@ public class BehaviorProfile {
     @Column(name = "momentum_trend", nullable = false)
     private MomentumTrend momentumTrend;
 
-    /**
-     * Fatigue score (0.0 - 1.0)
-     * 0.0 -> fully recovered
-     * 1.0 -> highly fatigued
-     */
     @NotNull
     @Min(0)
     @Max(1)
     @Column(name = "fatigue_score", nullable = false)
     private Double fatigueScore;
 
-    /**
-     * Energy trend (daily logs average):
-     * Example scale: 1–10, normalized to 0.0–1.0
-     */
     @NotNull
     @Min(0)
     @Max(1)
     @Column(name = "recent_energy_score", nullable = false)
     private Double recentEnergyScore;
-
-    // ---------------- Coaching layer ----------------
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -150,11 +119,8 @@ public class BehaviorProfile {
     @Column(name = "last_tone_change")
     private LocalDateTime lastToneChange;
 
-    // ---------------- Housekeeping ----------------
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 
     // ========================================================================
     // CONSTRUCTORS
@@ -168,17 +134,13 @@ public class BehaviorProfile {
         this.longestStreak = 0;
         this.totalBricksLaid = 0;
         this.consistencyScore = 0.0;
-
         this.motivationState = MotivationState.NEUTRAL;
         this.momentumTrend = MomentumTrend.STABLE;
-
         this.fatigueScore = 0.0;
         this.recentEnergyScore = 0.5;
-
         this.currentTone = CoachingTone.ENCOURAGING;
         this.lastToneChange = LocalDateTime.now();
     }
-
 
     // ========================================================================
     // JPA CALLBACKS
@@ -187,7 +149,9 @@ public class BehaviorProfile {
     @PrePersist
     protected void onCreate() {
         this.updatedAt = LocalDateTime.now();
-        this.lastToneChange = LocalDateTime.now();
+        if (this.lastToneChange == null) {
+            this.lastToneChange = LocalDateTime.now();
+        }
     }
 
     @PreUpdate
@@ -195,13 +159,12 @@ public class BehaviorProfile {
         this.updatedAt = LocalDateTime.now();
     }
 
-
     // ========================================================================
-    // ADAPTIVE BUSINESS LOGIC
+    // BUSINESS LOGIC
     // ========================================================================
 
     /**
-     * Called when the user completes a workout.
+     * Process a completed workout and update all behavioral metrics
      */
     public void logWorkout(LocalDate today, int daysSinceCreation) {
         updateStreak(today);
@@ -213,14 +176,14 @@ public class BehaviorProfile {
         this.lastWorkoutDate = today;
     }
 
-    // ------------------- Streak Logic -------------------
-
     private void updateStreak(LocalDate today) {
         if (lastWorkoutDate == null) {
             consecutiveDays = 1;
         } else {
             long diff = ChronoUnit.DAYS.between(lastWorkoutDate, today);
-            if (diff == 0) return;
+            if (diff == 0) {
+                return;
+            }
             if (diff == 1) {
                 consecutiveDays++;
             } else {
@@ -246,8 +209,6 @@ public class BehaviorProfile {
         }
     }
 
-    // ------------------- Motivation Logic -------------------
-
     private void updateMotivation() {
         if (consistencyScore >= 0.7) {
             motivationState = MotivationState.MOTIVATED;
@@ -257,8 +218,6 @@ public class BehaviorProfile {
             motivationState = MotivationState.NEUTRAL;
         }
     }
-
-    // ------------------- Momentum Logic -------------------
 
     private void updateMomentum(LocalDate today) {
         if (lastWorkoutDate == null) {
@@ -276,8 +235,6 @@ public class BehaviorProfile {
             momentumTrend = MomentumTrend.STABLE;
         }
     }
-
-    // ------------------- Tone Adaptation -------------------
 
     private void adjustTone() {
         CoachingTone oldTone = currentTone;
@@ -297,13 +254,121 @@ public class BehaviorProfile {
         }
     }
 
-
     // ========================================================================
-    // GETTERS + SETTERS (Omitted explanation for brevity)
+    // GETTERS AND SETTERS
     // ========================================================================
 
-    // ... getters and setters identical to your existing style ...
+    public Long getBehaviorId() {
+        return behaviorId;
+    }
 
+    public void setBehaviorId(Long behaviorId) {
+        this.behaviorId = behaviorId;
+    }
+
+    public Long getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
+    }
+
+    public Integer getConsecutiveDays() {
+        return consecutiveDays;
+    }
+
+    public void setConsecutiveDays(Integer consecutiveDays) {
+        this.consecutiveDays = consecutiveDays;
+    }
+
+    public Integer getLongestStreak() {
+        return longestStreak;
+    }
+
+    public void setLongestStreak(Integer longestStreak) {
+        this.longestStreak = longestStreak;
+    }
+
+    public Integer getTotalBricksLaid() {
+        return totalBricksLaid;
+    }
+
+    public void setTotalBricksLaid(Integer totalBricksLaid) {
+        this.totalBricksLaid = totalBricksLaid;
+    }
+
+    public Double getConsistencyScore() {
+        return consistencyScore;
+    }
+
+    public void setConsistencyScore(Double consistencyScore) {
+        this.consistencyScore = consistencyScore;
+    }
+
+    public LocalDate getLastWorkoutDate() {
+        return lastWorkoutDate;
+    }
+
+    public void setLastWorkoutDate(LocalDate lastWorkoutDate) {
+        this.lastWorkoutDate = lastWorkoutDate;
+    }
+
+    public MotivationState getMotivationState() {
+        return motivationState;
+    }
+
+    public void setMotivationState(MotivationState motivationState) {
+        this.motivationState = motivationState;
+    }
+
+    public MomentumTrend getMomentumTrend() {
+        return momentumTrend;
+    }
+
+    public void setMomentumTrend(MomentumTrend momentumTrend) {
+        this.momentumTrend = momentumTrend;
+    }
+
+    public Double getFatigueScore() {
+        return fatigueScore;
+    }
+
+    public void setFatigueScore(Double fatigueScore) {
+        this.fatigueScore = fatigueScore;
+    }
+
+    public Double getRecentEnergyScore() {
+        return recentEnergyScore;
+    }
+
+    public void setRecentEnergyScore(Double recentEnergyScore) {
+        this.recentEnergyScore = recentEnergyScore;
+    }
+
+    public CoachingTone getCurrentTone() {
+        return currentTone;
+    }
+
+    public void setCurrentTone(CoachingTone currentTone) {
+        this.currentTone = currentTone;
+    }
+
+    public LocalDateTime getLastToneChange() {
+        return lastToneChange;
+    }
+
+    public void setLastToneChange(LocalDateTime lastToneChange) {
+        this.lastToneChange = lastToneChange;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // ========================================================================
     // OBJECT OVERRIDES
