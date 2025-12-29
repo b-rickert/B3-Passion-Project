@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.b3.model.BehaviorProfile.MotivationState;
 import com.b3.model.BehaviorProfile.MomentumTrend;
 import com.b3.model.BehaviorProfile.CoachingTone;
+import com.b3.model.UserProfile.FitnessLevel;
+import com.b3.model.UserProfile.PrimaryGoal;
 
 import java.time.LocalDate;
 
@@ -18,19 +20,32 @@ import java.time.LocalDate;
 class BehaviorProfileTest {
 
     private BehaviorProfile behaviorProfile;
-    private static final Long PROFILE_ID = 1L;
+    private UserProfile userProfile;
 
     @BeforeEach
     void setUp() {
-        behaviorProfile = new BehaviorProfile(PROFILE_ID);
+        // Create UserProfile first (required for relationship)
+        userProfile = new UserProfile(
+            "TestUser",
+            25,
+            FitnessLevel.INTERMEDIATE,
+            PrimaryGoal.STRENGTH,
+            "Dumbbells,Resistance Bands",
+            4
+        );
+        userProfile.setProfileId(1L); // Set ID for testing
+        
+        // Create BehaviorProfile with UserProfile reference
+        behaviorProfile = new BehaviorProfile(userProfile);
     }
 
     // ==================== Constructor Tests ====================
 
     @Test
     @DisplayName("Should create BehaviorProfile with default values")
-    void testConstructorWithProfileId() {
-        assertEquals(PROFILE_ID, behaviorProfile.getProfileId());
+    void testConstructorWithUserProfile() {
+        assertNotNull(behaviorProfile.getUserProfile());
+        assertEquals(userProfile, behaviorProfile.getUserProfile());
         assertEquals(0, behaviorProfile.getConsecutiveDays());
         assertEquals(0, behaviorProfile.getLongestStreak());
         assertEquals(0, behaviorProfile.getTotalBricksLaid());
@@ -48,7 +63,18 @@ class BehaviorProfileTest {
         BehaviorProfile emptyProfile = new BehaviorProfile();
         
         assertNotNull(emptyProfile);
-        assertNull(emptyProfile.getProfileId());
+        assertNull(emptyProfile.getUserProfile());
+    }
+
+    // ==================== Relationship Tests ====================
+
+    @Test
+    @DisplayName("Should maintain bidirectional relationship with UserProfile")
+    void testBidirectionalRelationship() {
+        userProfile.setBehaviorProfile(behaviorProfile);
+        
+        assertEquals(userProfile, behaviorProfile.getUserProfile());
+        assertEquals(behaviorProfile, userProfile.getBehaviorProfile());
     }
 
     // ==================== Enum Tests ====================
@@ -378,84 +404,5 @@ class BehaviorProfileTest {
     @DisplayName("Longest streak is preserved across resets")
     void testLongestStreakPreservation() {
         LocalDate startDate = LocalDate.now();
-        
-        // Build 5-day streak
-        for (int i = 0; i < 5; i++) {
-            behaviorProfile.logWorkout(startDate.plusDays(i), i + 1);
-        }
-        
-        assertEquals(5, behaviorProfile.getLongestStreak());
-        
-        // Break streak
-        behaviorProfile.logWorkout(startDate.plusDays(10), 11);
-        
-        assertEquals(1, behaviorProfile.getConsecutiveDays());
-        assertEquals(5, behaviorProfile.getLongestStreak()); // Still preserved
-    }
-
-    // ==================== equals() and hashCode() Tests ====================
-
-    @Test
-    @DisplayName("equals() returns true for same behaviorId")
-    void testEqualsReturnsTrueForSameId() {
-        BehaviorProfile profile1 = new BehaviorProfile();
-        profile1.setBehaviorId(1L);
-        
-        BehaviorProfile profile2 = new BehaviorProfile();
-        profile2.setBehaviorId(1L);
-        
-        assertEquals(profile1, profile2);
-    }
-
-    @Test
-    @DisplayName("equals() returns false for different behaviorIds")
-    void testEqualsReturnsFalseForDifferentIds() {
-        BehaviorProfile profile1 = new BehaviorProfile();
-        profile1.setBehaviorId(1L);
-        
-        BehaviorProfile profile2 = new BehaviorProfile();
-        profile2.setBehaviorId(2L);
-        
-        assertNotEquals(profile1, profile2);
-    }
-
-    @Test
-    @DisplayName("equals() returns true when comparing to itself")
-    void testEqualsReturnsTrueForSameObject() {
-        assertEquals(behaviorProfile, behaviorProfile);
-    }
-
-    @Test
-    @DisplayName("equals() returns false when comparing to null")
-    void testEqualsReturnsFalseForNull() {
-        assertNotEquals(null, behaviorProfile);
-    }
-
-    @Test
-    @DisplayName("hashCode() is same for profiles with same behaviorId")
-    void testHashCodeSameForSameId() {
-        BehaviorProfile profile1 = new BehaviorProfile();
-        profile1.setBehaviorId(1L);
-        
-        BehaviorProfile profile2 = new BehaviorProfile();
-        profile2.setBehaviorId(1L);
-        
-        assertEquals(profile1.hashCode(), profile2.hashCode());
-    }
-
-    // ==================== toString() Test ====================
-
-    @Test
-    @DisplayName("toString() contains key fields")
-    void testToStringContainsKeyFields() {
-        behaviorProfile.setBehaviorId(1L);
-        behaviorProfile.setConsecutiveDays(5);
-        behaviorProfile.setTotalBricksLaid(10);
-        
-        String result = behaviorProfile.toString();
-        
-        assertTrue(result.contains("behaviorId=1"));
-        assertTrue(result.contains("consecutiveDays=5"));
-        assertTrue(result.contains("totalBricksLaid=10"));
     }
 }

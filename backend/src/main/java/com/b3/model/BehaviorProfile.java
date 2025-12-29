@@ -57,7 +57,6 @@ public class BehaviorProfile {
 
     /**
      * One-to-one relationship with UserProfile (owns the foreign key)
-     * This side has @JoinColumn, so behavior_profile table has profile_id FK
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_id", nullable = false, unique = true)
@@ -68,7 +67,7 @@ public class BehaviorProfile {
     // ========================================================================
 
     @Column(name = "preferred_workout_time", length = 20)
-    private String preferredWorkoutTime; // Morning/Afternoon/Evening
+    private String preferredWorkoutTime;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -260,50 +259,125 @@ public class BehaviorProfile {
     // GETTERS AND SETTERS
     // ========================================================================
 
-    public Long getBehaviorId() { return behaviorId; }
-    public void setBehaviorId(Long behaviorId) { this.behaviorId = behaviorId; }
+    public Long getBehaviorId() {
+        return behaviorId;
+    }
 
-    public UserProfile getUserProfile() { return userProfile; }
-    public void setUserProfile(UserProfile userProfile) { this.userProfile = userProfile; }
+    public void setBehaviorId(Long behaviorId) {
+        this.behaviorId = behaviorId;
+    }
 
-    public String getPreferredWorkoutTime() { return preferredWorkoutTime; }
-    public void setPreferredWorkoutTime(String preferredWorkoutTime) { this.preferredWorkoutTime = preferredWorkoutTime; }
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
 
-    public Integer getConsecutiveDays() { return consecutiveDays; }
-    public void setConsecutiveDays(Integer consecutiveDays) { this.consecutiveDays = consecutiveDays; }
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
 
-    public Integer getLongestStreak() { return longestStreak; }
-    public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
+    public String getPreferredWorkoutTime() {
+        return preferredWorkoutTime;
+    }
 
-    public Integer getTotalBricksLaid() { return totalBricksLaid; }
-    public void setTotalBricksLaid(Integer totalBricksLaid) { this.totalBricksLaid = totalBricksLaid; }
+    public void setPreferredWorkoutTime(String preferredWorkoutTime) {
+        this.preferredWorkoutTime = preferredWorkoutTime;
+    }
 
-    public Double getConsistencyScore() { return consistencyScore; }
-    public void setConsistencyScore(Double consistencyScore) { this.consistencyScore = consistencyScore; }
+    public Integer getConsecutiveDays() {
+        return consecutiveDays;
+    }
 
-    public LocalDate getLastWorkoutDate() { return lastWorkoutDate; }
-    public void setLastWorkoutDate(LocalDate lastWorkoutDate) { this.lastWorkoutDate = lastWorkoutDate; }
+    public void setConsecutiveDays(Integer consecutiveDays) {
+        this.consecutiveDays = consecutiveDays;
+    }
 
-    public MotivationState getMotivationState() { return motivationState; }
-    public void setMotivationState(MotivationState motivationState) { this.motivationState = motivationState; }
+    public Integer getLongestStreak() {
+        return longestStreak;
+    }
 
-    public MomentumTrend getMomentumTrend() { return momentumTrend; }
-    public void setMomentumTrend(MomentumTrend momentumTrend) { this.momentumTrend = momentumTrend; }
+    public void setLongestStreak(Integer longestStreak) {
+        this.longestStreak = longestStreak;
+    }
 
-    public Double getFatigueScore() { return fatigueScore; }
-    public void setFatigueScore(Double fatigueScore) { this.fatigueScore = fatigueScore; }
+    public Integer getTotalBricksLaid() {
+        return totalBricksLaid;
+    }
 
-    public Double getRecentEnergyScore() { return recentEnergyScore; }
-    public void setRecentEnergyScore(Double recentEnergyScore) { this.recentEnergyScore = recentEnergyScore; }
+    public void setTotalBricksLaid(Integer totalBricksLaid) {
+        this.totalBricksLaid = totalBricksLaid;
+    }
 
-    public CoachingTone getCurrentTone() { return currentTone; }
-    public void setCurrentTone(CoachingTone currentTone) { this.currentTone = currentTone; }
+    public Double getConsistencyScore() {
+        return consistencyScore;
+    }
 
-    public LocalDateTime getLastToneChange() { return lastToneChange; }
-    public void setLastToneChange(LocalDateTime lastToneChange) { this.lastToneChange = lastToneChange; }
+    public void setConsistencyScore(Double consistencyScore) {
+        this.consistencyScore = consistencyScore;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDate getLastWorkoutDate() {
+        return lastWorkoutDate;
+    }
+
+    public void setLastWorkoutDate(LocalDate lastWorkoutDate) {
+        this.lastWorkoutDate = lastWorkoutDate;
+    }
+
+    public MotivationState getMotivationState() {
+        return motivationState;
+    }
+
+    public void setMotivationState(MotivationState motivationState) {
+        this.motivationState = motivationState;
+    }
+
+    public MomentumTrend getMomentumTrend() {
+        return momentumTrend;
+    }
+
+    public void setMomentumTrend(MomentumTrend momentumTrend) {
+        this.momentumTrend = momentumTrend;
+    }
+
+    public Double getFatigueScore() {
+        return fatigueScore;
+    }
+
+    public void setFatigueScore(Double fatigueScore) {
+        this.fatigueScore = fatigueScore;
+    }
+
+    public Double getRecentEnergyScore() {
+        return recentEnergyScore;
+    }
+
+    public void setRecentEnergyScore(Double recentEnergyScore) {
+        this.recentEnergyScore = recentEnergyScore;
+    }
+
+    public CoachingTone getCurrentTone() {
+        return currentTone;
+    }
+
+    public void setCurrentTone(CoachingTone currentTone) {
+        this.currentTone = currentTone;
+    }
+
+    public LocalDateTime getLastToneChange() {
+        return lastToneChange;
+    }
+
+    public void setLastToneChange(LocalDateTime lastToneChange) {
+        this.lastToneChange = lastToneChange;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // ========================================================================
     // OBJECT OVERRIDES
