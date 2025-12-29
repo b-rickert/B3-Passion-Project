@@ -14,6 +14,8 @@ import com.b3.model.WorkoutSession.CompletionStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 
 /**
  * Unit tests for Brick entity
@@ -160,10 +162,18 @@ class BrickTest {
     @Test
     @DisplayName("isFromThisWeek() returns true for date within current week")
     void testIsFromThisWeekTrue() {
+        // Test with today
         brick.setBrickDate(LocalDate.now());
         assertTrue(brick.isFromThisWeek());
 
-        brick.setBrickDate(LocalDate.now().minusDays(3));
+        // Test with start of current week (Monday)
+        LocalDate startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        brick.setBrickDate(startOfWeek);
+        assertTrue(brick.isFromThisWeek());
+
+        // Test with end of current week (Sunday)
+        LocalDate endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        brick.setBrickDate(endOfWeek);
         assertTrue(brick.isFromThisWeek());
     }
 
