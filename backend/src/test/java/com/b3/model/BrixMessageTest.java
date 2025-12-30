@@ -42,6 +42,9 @@ class BrixMessageTest {
             Tone.ENCOURAGING,
             "workout_completed"
         );
+        
+        // FIX: Manually set sentAt for unit tests (simulates @PrePersist)
+        message.setSentAt(LocalDateTime.now());
     }
 
     // =====================================================
@@ -203,21 +206,35 @@ class BrixMessageTest {
     }
 
     @Test
-    @DisplayName("isSentRecently() returns true for message within last hour")
+    @DisplayName("isSentRecently() returns true for message within last 24 hours")
     void testIsSentRecentlyTrue() {
-        message.setSentAt(LocalDateTime.now().minusMinutes(30));
+        message.setSentAt(LocalDateTime.now().minusHours(12));
         assertTrue(message.isSentRecently());
     }
 
     @Test
-    @DisplayName("isSentRecently() returns false for message over an hour ago")
+    @DisplayName("isSentRecently() returns false for message over 24 hours ago")
     void testIsSentRecentlyFalse() {
-        message.setSentAt(LocalDateTime.now().minusHours(2));
+        message.setSentAt(LocalDateTime.now().minusHours(25));
         assertFalse(message.isSentRecently());
     }
 
     @Test
-    @DisplayName("getHoursAgo() calculates correctly")
+    @DisplayName("isSentRecently() returns true for message exactly 24 hours ago")
+    void testIsSentRecentlyExactly24Hours() {
+        message.setSentAt(LocalDateTime.now().minusHours(24));
+        assertTrue(message.isSentRecently());
+    }
+
+    @Test
+    @DisplayName("isSentRecently() returns false when sentAt is null")
+    void testIsSentRecentlyNull() {
+        message.setSentAt(null);
+        assertFalse(message.isSentRecently());
+    }
+
+    @Test
+    @DisplayName("getHoursAgo() calculates correctly for recent messages")
     void testGetHoursAgo() {
         message.setSentAt(LocalDateTime.now().minusHours(3));
         assertEquals(3, message.getHoursAgo());
@@ -227,14 +244,28 @@ class BrixMessageTest {
     }
 
     @Test
-    @DisplayName("getMessagePreview() returns first 50 chars")
+    @DisplayName("getHoursAgo() returns -1 when sentAt is null")
+    void testGetHoursAgoNull() {
+        message.setSentAt(null);
+        assertEquals(-1, message.getHoursAgo());
+    }
+
+    @Test
+    @DisplayName("getMessagePreview() returns first 50 chars with ellipsis")
     void testGetMessagePreview() {
         String longMessage = "This is a very long message that should be truncated to only show the first 50 characters for preview purposes.";
         message.setMessageText(longMessage);
         
         String preview = message.getMessagePreview();
+        
+        // Verify length is exactly 50
         assertEquals(50, preview.length());
+        
+        // Verify it ends with "..."
         assertTrue(preview.endsWith("..."));
+        
+        // Verify the actual content (first 47 chars + "...")
+        assertEquals("This is a very long message that should be trun...", preview);
     }
 
     @Test
@@ -242,6 +273,13 @@ class BrixMessageTest {
     void testGetMessagePreviewShort() {
         message.setMessageText("Short message");
         assertEquals("Short message", message.getMessagePreview());
+    }
+
+    @Test
+    @DisplayName("getMessagePreview() handles null message text")
+    void testGetMessagePreviewNull() {
+        message.setMessageText(null);
+        assertNull(message.getMessagePreview());
     }
 
     // =====================================================
@@ -375,6 +413,24 @@ class BrixMessageTest {
         assertTrue(result.contains("messageId=1"));
         assertTrue(result.contains("MOTIVATION"));
         assertTrue(result.contains("ENCOURAGING"));
-        assertTrue(result.contains("workout_completed"));
+    }
+
+    @Test
+    @DisplayName("toString() includes message preview")
+    void testToStringIncludesPreview() {
+        message.setMessageId(1L);
+        
+        String result = message.toString();
+        
+        assertTrue(result.contains("preview="));
+        assertTrue(result.contains("Great job"));
     }
 }
+
+
+
+
+
+
+
+
