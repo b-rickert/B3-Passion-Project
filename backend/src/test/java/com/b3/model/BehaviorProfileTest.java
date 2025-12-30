@@ -385,6 +385,52 @@ class BehaviorProfileTest {
     }
 
     // =====================================================
+    // INTELLIGENCE FIELDS TESTS 
+    // =====================================================
+    
+    @Test
+    @DisplayName("Should set and get avgWorkoutTimeOfDay")
+    void testSetAvgWorkoutTimeOfDay() {
+        behaviorProfile.setAvgWorkoutTimeOfDay("morning");
+        assertEquals("morning", behaviorProfile.getAvgWorkoutTimeOfDay());
+    }
+
+    @Test
+    @DisplayName("Should set and get preferredWorkoutTypes")
+    void testSetPreferredWorkoutTypes() {
+        behaviorProfile.setPreferredWorkoutTypes("STRENGTH,CARDIO");
+        assertEquals("STRENGTH,CARDIO", behaviorProfile.getPreferredWorkoutTypes());
+    }
+
+    @Test
+    @DisplayName("Should set and get energyPattern")
+    void testSetEnergyPattern() {
+        behaviorProfile.setEnergyPattern("high_morning");
+        assertEquals("high_morning", behaviorProfile.getEnergyPattern());
+    }
+
+    @Test
+    @DisplayName("Should set and get stressTrend")
+    void testSetStressTrend() {
+        behaviorProfile.setStressTrend("stable");
+        assertEquals("stable", behaviorProfile.getStressTrend());
+    }
+
+    @Test
+    @DisplayName("Should set and get avgSessionDuration")
+    void testSetAvgSessionDuration() {
+        behaviorProfile.setAvgSessionDuration(45);
+        assertEquals(45, behaviorProfile.getAvgSessionDuration());
+    }
+
+    @Test
+    @DisplayName("Should set and get skipFrequency")
+    void testSetSkipFrequency() {
+        behaviorProfile.setSkipFrequency(0.15);
+        assertEquals(0.15, behaviorProfile.getSkipFrequency());
+    }
+
+    // =====================================================
     // Edge Case Tests
     // =====================================================
 
