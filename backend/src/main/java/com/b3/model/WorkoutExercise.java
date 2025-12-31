@@ -60,6 +60,13 @@ public class WorkoutExercise {
     @Column(name = "duration_seconds")
     private Integer durationSeconds;
 
+    @Min(0)
+    @Column(name = "rest_seconds")
+    private Integer restSeconds;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
     // ========================================================================
     // CONSTRUCTORS
     // ========================================================================
@@ -209,6 +216,22 @@ public class WorkoutExercise {
 
     public void setDurationSeconds(Integer durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public Integer getRestSeconds() {
+        return restSeconds;
+    }
+
+    public void setRestSeconds(Integer restSeconds) {
+        this.restSeconds = restSeconds;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     // ========================================================================

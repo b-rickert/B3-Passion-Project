@@ -30,6 +30,12 @@ public class Brick {
         MILESTONE
     }
 
+    public enum BrickStatus {
+        LAID,       // Workout completed
+        MISSED,     // No workout (unplanned)
+        RECOVERY    // Planned rest day
+    }
+
     // ========================================================================
     // FIELDS
     // ========================================================================
@@ -48,7 +54,7 @@ public class Brick {
     private UserProfile userProfile;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
+    @JoinColumn(name = "session_id")
     private WorkoutSession workoutSession;
 
     // ========================================================================
@@ -64,6 +70,13 @@ public class Brick {
     @Column(name = "brick_type", nullable = false, length = 20)
     private BrickType brickType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private BrickStatus status;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -78,6 +91,13 @@ public class Brick {
         this.workoutSession = workoutSession;
         this.brickDate = brickDate;
         this.brickType = brickType;
+    }
+
+    public Brick(UserProfile userProfile, LocalDate brickDate, BrickStatus status) {
+        this.userProfile = userProfile;
+        this.brickDate = brickDate;
+        this.status = status;
+        this.brickType = BrickType.WORKOUT;
     }
 
     // ========================================================================
@@ -105,6 +125,27 @@ public class Brick {
      */
     public boolean isMilestoneBrick() {
         return brickType == BrickType.MILESTONE;
+    }
+
+    /**
+     * Check if brick represents a completed workout
+     */
+    public boolean isLaid() {
+        return status == BrickStatus.LAID;
+    }
+
+    /**
+     * Check if brick represents a missed workout
+     */
+    public boolean isMissed() {
+        return status == BrickStatus.MISSED;
+    }
+
+    /**
+     * Check if brick represents a recovery day
+     */
+    public boolean isRecovery() {
+        return status == BrickStatus.RECOVERY;
     }
 
     /**
@@ -200,6 +241,22 @@ public class Brick {
         this.brickType = brickType;
     }
 
+    public BrickStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BrickStatus status) {
+        this.status = status;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -213,6 +270,7 @@ public class Brick {
         return "Brick{" +
                 "brickId=" + brickId +
                 ", brickType=" + brickType +
+                ", status=" + status +
                 ", brickDate=" + brickDate +
                 ", daysAgo=" + getDaysAgo() +
                 '}';

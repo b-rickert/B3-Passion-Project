@@ -73,6 +73,15 @@ public class UserProfile {
     @Column(name = "weekly_goal_days", nullable = false)
     private Integer weeklyGoalDays;
 
+    @Column(name = "current_streak")
+    private Integer currentStreak = 0;
+
+    @Column(name = "longest_streak")
+    private Integer longestStreak = 0;
+
+    @Column(name = "total_workouts")
+    private Integer totalWorkouts = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -154,6 +163,33 @@ public class UserProfile {
         if (weeklyGoalDays != null) this.weeklyGoalDays = weeklyGoalDays;
     }
 
+    /**
+     * Increment total workouts count
+     */
+    public void incrementTotalWorkouts() {
+        if (this.totalWorkouts == null) {
+            this.totalWorkouts = 0;
+        }
+        this.totalWorkouts++;
+    }
+
+    /**
+     * Update current streak and check if new longest streak
+     */
+    public void updateStreak(Integer newStreak) {
+        this.currentStreak = newStreak;
+        if (this.longestStreak == null || newStreak > this.longestStreak) {
+            this.longestStreak = newStreak;
+        }
+    }
+
+    /**
+     * Reset current streak to 0
+     */
+    public void resetStreak() {
+        this.currentStreak = 0;
+    }
+
     // ========================================================================
     // GETTERS AND SETTERS
     // ========================================================================
@@ -214,10 +250,34 @@ public class UserProfile {
         this.weeklyGoalDays = weeklyGoalDays; 
     }
 
+    public Integer getCurrentStreak() {
+    return currentStreak;
+    }
+
+    public void setCurrentStreak(Integer currentStreak) {
+        this.currentStreak = currentStreak;
+    }
+
+    public Integer getLongestStreak() {
+        return longestStreak;
+    }
+
+    public void setLongestStreak(Integer longestStreak) {
+        this.longestStreak = longestStreak;
+    }
+
+    public Integer getTotalWorkouts() {
+        return totalWorkouts;
+    }
+
+    public void setTotalWorkouts(Integer totalWorkouts) {
+        this.totalWorkouts = totalWorkouts;
+    }
+
     public LocalDateTime getCreatedAt() { 
         return createdAt; 
     }
-    
+
     public LocalDateTime getUpdatedAt() { 
         return updatedAt; 
     }

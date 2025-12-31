@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Workout entity - represents workout templates in the library
@@ -17,6 +20,13 @@ import java.util.Objects;
 @Table(name = "workout")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workout {
+
+    // ========================================================================
+    // RELATIONSHIPS  
+    // ========================================================================
+
+    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkoutExercise> exercises = new ArrayList<>();
 
     // ========================================================================
     // ENUMS
@@ -245,6 +255,14 @@ public class Workout {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public List<WorkoutExercise> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(List<WorkoutExercise> exercises) {
+        this.exercises = exercises;
+}
 
     // ========================================================================
     // OBJECT OVERRIDES
