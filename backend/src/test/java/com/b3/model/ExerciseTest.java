@@ -18,7 +18,8 @@ class ExerciseTest {
         exercise = new Exercise(
             "Push-ups",
             "Place hands shoulder-width apart, lower body until chest nearly touches floor, push back up",
-            "Chest",
+            Exercise.MuscleGroup.CHEST,
+            Exercise.EquipmentType.BODYWEIGHT,
             "https://example.com/pushups.mp4"
         );
     }
@@ -69,7 +70,7 @@ class ExerciseTest {
     @Test
     @DisplayName("Should set and get muscle group")
     void testSetAndGetMuscleGroup() {
-        exercise.setMuscleGroup("Legs");
+        exercise.setMuscleGroup(Exercise.MuscleGroup.LEGS);
         assertEquals("Legs", exercise.getMuscleGroup());
     }
 
@@ -114,65 +115,121 @@ class ExerciseTest {
     @Test
     @DisplayName("targetsMuscleGroup() returns true for matching muscle group")
     void testTargetsMuscleGroupMatching() {
-        assertTrue(exercise.targetsMuscleGroup("Chest"));
-    }
-
-    @Test
-    @DisplayName("targetsMuscleGroup() is case-insensitive")
-    void testTargetsMuscleGroupCaseInsensitive() {
-        assertTrue(exercise.targetsMuscleGroup("chest"));
-        assertTrue(exercise.targetsMuscleGroup("CHEST"));
-        assertTrue(exercise.targetsMuscleGroup("ChEsT"));
+        assertTrue(exercise.targetsMuscleGroup(Exercise.MuscleGroup.CHEST));
     }
 
     @Test
     @DisplayName("targetsMuscleGroup() returns false for non-matching muscle group")
     void testTargetsMuscleGroupNonMatching() {
-        assertFalse(exercise.targetsMuscleGroup("Legs"));
-        assertFalse(exercise.targetsMuscleGroup("Back"));
+        assertFalse(exercise.targetsMuscleGroup(Exercise.MuscleGroup.LEGS));
+        assertFalse(exercise.targetsMuscleGroup(Exercise.MuscleGroup.BACK));
     }
 
     @Test
     @DisplayName("targetsMuscleGroup() returns false when muscle group is null")
     void testTargetsMuscleGroupWhenNull() {
         exercise.setMuscleGroup(null);
-        assertFalse(exercise.targetsMuscleGroup("Chest"));
+        assertFalse(exercise.targetsMuscleGroup(Exercise.MuscleGroup.CHEST));
     }
 
     @Test
-    @DisplayName("isBodyweight() returns true when no equipment mentioned")
+    @DisplayName("isBodyweight() returns true for bodyweight exercises")
     void testIsBodyweightTrue() {
         Exercise bodyweightEx = new Exercise(
             "Burpees",
             "Full body exercise",
-            "Full Body",
+            Exercise.MuscleGroup.FULL_BODY,
+            Exercise.EquipmentType.BODYWEIGHT,
             null
         );
         assertTrue(bodyweightEx.isBodyweight());
     }
 
     @Test
-    @DisplayName("isBodyweight() returns false when equipment mentioned in description")
+    @DisplayName("isBodyweight() returns false for equipment-based exercises")
     void testIsBodyweightFalseWithEquipment() {
         Exercise weightedEx = new Exercise(
             "Dumbbell Press",
             "Press dumbbells overhead",
-            "Shoulders",
+            Exercise.MuscleGroup.SHOULDERS,
+            Exercise.EquipmentType.DUMBBELLS,
             null
         );
         assertFalse(weightedEx.isBodyweight());
     }
 
     @Test
-    @DisplayName("isBodyweight() handles null description")
-    void testIsBodyweightNullDescription() {
-        Exercise nullDescEx = new Exercise(
-            "Mystery Exercise",
-            null,
-            "Core",
+    @DisplayName("requiresEquipment() returns true for specific equipment")
+    void testRequiresEquipment() {
+        Exercise dumbbellEx = new Exercise(
+            "Bicep Curl",
+            "Curl dumbbells",
+            Exercise.MuscleGroup.BICEPS,
+            Exercise.EquipmentType.DUMBBELLS,
             null
         );
-        assertTrue(nullDescEx.isBodyweight());
+        assertTrue(dumbbellEx.requiresEquipment(Exercise.EquipmentType.DUMBBELLS));
+        assertFalse(dumbbellEx.requiresEquipment(Exercise.EquipmentType.BARBELL));
+    }
+
+    @Test
+    @DisplayName("isUpperBody() returns true for upper body muscle groups")
+    void testIsUpperBody() {
+        Exercise chestEx = new Exercise("Bench Press", "Press barbell", 
+            Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.BARBELL, null);
+        assertTrue(chestEx.isUpperBody());
+
+        Exercise backEx = new Exercise("Pull-ups", "Pull up", 
+            Exercise.MuscleGroup.BACK, Exercise.EquipmentType.PULL_UP_BAR, null);
+        assertTrue(backEx.isUpperBody());
+
+        Exercise shoulderEx = new Exercise("Shoulder Press", "Press overhead", 
+            Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.DUMBBELLS, null);
+        assertTrue(shoulderEx.isUpperBody());
+    }
+
+    @Test
+    @DisplayName("isUpperBody() returns false for lower body exercises")
+    void testIsUpperBodyFalseForLowerBody() {
+        Exercise legEx = new Exercise("Squats", "Squat down", 
+            Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null);
+        assertFalse(legEx.isUpperBody());
+    }
+
+    @Test
+    @DisplayName("isLowerBody() returns true for lower body muscle groups")
+    void testIsLowerBody() {
+        Exercise legEx = new Exercise("Squats", "Squat down", 
+            Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null);
+        assertTrue(legEx.isLowerBody());
+
+        Exercise gluteEx = new Exercise("Hip Thrust", "Thrust hips", 
+            Exercise.MuscleGroup.GLUTES, Exercise.EquipmentType.BARBELL, null);
+        assertTrue(gluteEx.isLowerBody());
+
+        Exercise quadEx = new Exercise("Leg Extension", "Extend legs", 
+            Exercise.MuscleGroup.QUADS, Exercise.EquipmentType.MACHINE, null);
+        assertTrue(quadEx.isLowerBody());
+    }
+
+    @Test
+    @DisplayName("isLowerBody() returns false for upper body exercises")
+    void testIsLowerBodyFalseForUpperBody() {
+        assertFalse(exercise.isLowerBody());
+    }
+
+    @Test
+    @DisplayName("isCore() returns true for core exercises")
+    void testIsCore() {
+        Exercise coreEx = new Exercise("Plank", "Hold plank position", 
+            Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+        assertTrue(coreEx.isCore());
+    }
+
+    @Test
+    @DisplayName("isCore() returns false for non-core exercises")
+    void testIsCoreForNonCore() {
+        assertFalse(exercise.isCore());
     }
 
     // =====================================================

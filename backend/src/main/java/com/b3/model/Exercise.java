@@ -1,6 +1,5 @@
 package com.b3.model;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -13,11 +12,41 @@ import java.util.Objects;
  * Stores reusable exercises that can be added to multiple workouts.
  * Contains exercise details, target muscle groups, and demo videos.
  */
-
 @Entity
 @Table(name = "exercise")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Exercise {
+
+    // ========================================================================
+    // ENUMS
+    // ========================================================================
+
+    public enum MuscleGroup {
+        CHEST,
+        BACK,
+        SHOULDERS,
+        BICEPS,
+        TRICEPS,
+        LEGS,
+        QUADS,
+        HAMSTRINGS,
+        GLUTES,
+        CORE,
+        FULL_BODY
+    }
+
+    public enum EquipmentType {
+        BODYWEIGHT,
+        DUMBBELLS,
+        BARBELL,
+        KETTLEBELL,
+        RESISTANCE_BANDS,
+        CABLE,
+        MACHINE,
+        BENCH,
+        PULL_UP_BAR,
+        OTHER
+    }
 
     // ========================================================================
     // FIELDS
@@ -36,9 +65,15 @@ public class Exercise {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Size(max = 50)
-    @Column(name = "muscle_group", length = 50)
-    private String muscleGroup;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "muscle_group", nullable = false, length = 30)
+    private MuscleGroup muscleGroup;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "equipment_type", nullable = false, length = 30)
+    private EquipmentType equipmentType;
 
     @Size(max = 255)
     @Column(name = "video_url", length = 255)
@@ -53,10 +88,12 @@ public class Exercise {
 
     public Exercise() {}
     
-    public Exercise(String name, String description, String muscleGroup, String videoUrl) {
+    public Exercise(String name, String description, MuscleGroup muscleGroup, 
+                   EquipmentType equipmentType, String videoUrl) {
         this.name = name;
         this.description = description;
         this.muscleGroup = muscleGroup;
+        this.equipmentType = equipmentType;
         this.videoUrl = videoUrl;
     }
 
@@ -81,37 +118,52 @@ public class Exercise {
     }
 
     /**
-     * Check if this exercise targets a specific muscle group (case-insensitive)
+     * Check if this exercise targets a specific muscle group
      */
-    public boolean targetsMuscleGroup(String targetGroup) {
-        if (muscleGroup == null || targetGroup == null) {
-            return false;
-        }
-        return muscleGroup.equalsIgnoreCase(targetGroup);
+    public boolean targetsMuscleGroup(MuscleGroup targetGroup) {
+        return muscleGroup == targetGroup;
     }
 
     /**
      * Check if this is a bodyweight exercise (no equipment required)
-     * Detects common equipment keywords in description
      */
     public boolean isBodyweight() {
-        if (description == null || description.isBlank()) {
-            return true; // Assume bodyweight if no description
-        }
+        return equipmentType == EquipmentType.BODYWEIGHT;
+    }
 
-        String descLower = description.toLowerCase();
-        String[] equipmentKeywords = {
-            "dumbbell", "barbell", "kettlebell", "weight", "band", "resistance",
-            "bench", "machine", "cable", "plate", "medicine ball", "trx"
-        };
+    /**
+     * Check if this exercise requires a specific equipment type
+     */
+    public boolean requiresEquipment(EquipmentType equipment) {
+        return equipmentType == equipment;
+    }
 
-        for (String keyword : equipmentKeywords) {
-            if (descLower.contains(keyword)) {
-                return false;
-            }
-        }
+    /**
+     * Check if this is an upper body exercise
+     */
+    public boolean isUpperBody() {
+        return muscleGroup == MuscleGroup.CHEST ||
+               muscleGroup == MuscleGroup.BACK ||
+               muscleGroup == MuscleGroup.SHOULDERS ||
+               muscleGroup == MuscleGroup.BICEPS ||
+               muscleGroup == MuscleGroup.TRICEPS;
+    }
 
-        return true;
+    /**
+     * Check if this is a lower body exercise
+     */
+    public boolean isLowerBody() {
+        return muscleGroup == MuscleGroup.LEGS ||
+               muscleGroup == MuscleGroup.QUADS ||
+               muscleGroup == MuscleGroup.HAMSTRINGS ||
+               muscleGroup == MuscleGroup.GLUTES;
+    }
+
+    /**
+     * Check if this targets core
+     */
+    public boolean isCore() {
+        return muscleGroup == MuscleGroup.CORE;
     }
 
     // ========================================================================
@@ -142,12 +194,20 @@ public class Exercise {
         this.description = description;
     }
 
-    public String getMuscleGroup() {
+    public MuscleGroup getMuscleGroup() {
         return muscleGroup;
     }
 
-    public void setMuscleGroup(String muscleGroup) {
+    public void setMuscleGroup(MuscleGroup muscleGroup) {
         this.muscleGroup = muscleGroup;
+    }
+
+    public EquipmentType getEquipmentType() {
+        return equipmentType;
+    }
+
+    public void setEquipmentType(EquipmentType equipmentType) {
+        this.equipmentType = equipmentType;
     }
 
     public String getVideoUrl() {
@@ -171,7 +231,8 @@ public class Exercise {
         return "Exercise{" +
                 "exerciseId=" + exerciseId +
                 ", name='" + name + '\'' +
-                ", muscleGroup='" + muscleGroup + '\'' +
+                ", muscleGroup=" + muscleGroup +
+                ", equipmentType=" + equipmentType +
                 ", hasVideo=" + hasVideo() +
                 '}';
     }

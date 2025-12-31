@@ -35,7 +35,8 @@ class WorkoutExerciseTest {
         exercise = new Exercise(
             "Push-ups",
             "Chest and triceps exercise",
-            "Chest",
+            Exercise.MuscleGroup.CHEST,
+            Exercise.EquipmentType.BODYWEIGHT,
             "https://example.com/pushups.mp4"
         );
         exercise.setExerciseId(1L);
