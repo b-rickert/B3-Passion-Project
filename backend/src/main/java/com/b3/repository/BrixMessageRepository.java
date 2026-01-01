@@ -73,7 +73,11 @@ public interface BrixMessageRepository extends JpaRepository<BrixMessage, Long> 
      * Custom query: Find today's messages
      */
     @Query("SELECT bm FROM BrixMessage bm WHERE bm.userProfile = :user " +
-           "AND DATE(bm.sentAt) = CURRENT_DATE " +
+           "AND bm.sentAt >= :startOfDay AND bm.sentAt < :endOfDay " +
            "ORDER BY bm.sentAt DESC")
-    List<BrixMessage> findTodaysMessages(@Param("user") UserProfile user);
+    List<BrixMessage> findTodaysMessages(
+        @Param("user") UserProfile user,
+        @Param("startOfDay") LocalDateTime startOfDay,
+        @Param("endOfDay") LocalDateTime endOfDay
+    );
 }

@@ -34,7 +34,7 @@ class ExerciseTest {
         assertEquals("Push-ups", exercise.getName());
         assertEquals("Place hands shoulder-width apart, lower body until chest nearly touches floor, push back up", 
                      exercise.getDescription());
-        assertEquals("Chest", exercise.getMuscleGroup());
+        assertEquals(Exercise.MuscleGroup.CHEST, exercise.getMuscleGroup());
         assertEquals("https://example.com/pushups.mp4", exercise.getVideoUrl());
     }
 
@@ -71,7 +71,7 @@ class ExerciseTest {
     @DisplayName("Should set and get muscle group")
     void testSetAndGetMuscleGroup() {
         exercise.setMuscleGroup(Exercise.MuscleGroup.LEGS);
-        assertEquals("Legs", exercise.getMuscleGroup());
+        assertEquals(Exercise.MuscleGroup.LEGS, exercise.getMuscleGroup());
     }
 
     @Test
@@ -324,6 +324,6 @@ class ExerciseTest {
         
         assertTrue(result.contains("exerciseId=1"));
         assertTrue(result.contains("Push-ups"));
-        assertTrue(result.contains("Chest"));
+        assertTrue(result.contains("muscleGroup=CHEST"));
     }
 }
