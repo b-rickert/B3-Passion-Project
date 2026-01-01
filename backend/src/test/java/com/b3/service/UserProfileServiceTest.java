@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 /**
  * TDD Tests for UserProfileService
- * Write tests FIRST, then implement
  */
 @DisplayName("UserProfileService Tests")
 class UserProfileServiceTest {

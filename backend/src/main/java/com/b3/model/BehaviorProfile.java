@@ -42,6 +42,20 @@ public class BehaviorProfile {
         CELEBRATORY
     }
 
+    public enum PreferredTime {
+        MORNING,      // 5am-11am
+        AFTERNOON,    // 11am-5pm  
+        EVENING,      // 5pm-9pm
+        NIGHT,        // 9pm-5am
+        FLEXIBLE      // No preference
+    }
+
+    public enum StressTrend {
+        DECREASING,   // Getting better
+        STABLE,       // No change
+        INCREASING    // Getting worse
+    }
+
     // ========================================================================
     // FIELDS
     // ========================================================================
@@ -66,8 +80,9 @@ public class BehaviorProfile {
     // BEHAVIOR METRICS
     // ========================================================================
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "preferred_workout_time", length = 20)
-    private String preferredWorkoutTime;
+    private PreferredTime preferredWorkoutTime;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -126,8 +141,9 @@ public class BehaviorProfile {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "avg_workout_time_of_day", length = 20)
-    private String avgWorkoutTimeOfDay;
+    private PreferredTime avgWorkoutTimeOfDay;
 
     @Column(name = "preferred_workout_types", length = 100)
     private String preferredWorkoutTypes;
@@ -135,8 +151,9 @@ public class BehaviorProfile {
     @Column(name = "energy_pattern", length = 50)
     private String energyPattern;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "stress_trend", length = 20)
-    private String stressTrend;
+    private StressTrend stressTrend;
 
     @Column(name = "avg_session_duration")
     private Integer avgSessionDuration;
@@ -293,13 +310,14 @@ public class BehaviorProfile {
         this.userProfile = userProfile;
     }
 
-    public String getPreferredWorkoutTime() {
+    public PreferredTime getPreferredWorkoutTime() {
         return preferredWorkoutTime;
     }
 
-    public void setPreferredWorkoutTime(String preferredWorkoutTime) {
+    public void setPreferredWorkoutTime(PreferredTime preferredWorkoutTime) {
         this.preferredWorkoutTime = preferredWorkoutTime;
     }
+
 
     public Integer getConsecutiveDays() {
         return consecutiveDays;
@@ -397,11 +415,11 @@ public class BehaviorProfile {
         this.updatedAt = updatedAt;
     }
 
-    public String getAvgWorkoutTimeOfDay() {
+    public PreferredTime getAvgWorkoutTimeOfDay() {
         return avgWorkoutTimeOfDay;
     }
 
-    public void setAvgWorkoutTimeOfDay(String avgWorkoutTimeOfDay) {
+    public void setAvgWorkoutTimeOfDay(PreferredTime avgWorkoutTimeOfDay) {
         this.avgWorkoutTimeOfDay = avgWorkoutTimeOfDay;
     }
 
@@ -421,11 +439,11 @@ public class BehaviorProfile {
         this.energyPattern = energyPattern;
     }
 
-    public String getStressTrend() {
+    public StressTrend getStressTrend() {
         return stressTrend;
     }
 
-    public void setStressTrend(String stressTrend) {
+    public void setStressTrend(StressTrend stressTrend) {
         this.stressTrend = stressTrend;
     }
 

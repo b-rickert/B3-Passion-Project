@@ -187,11 +187,20 @@ class BrickTest {
     @Test
     @DisplayName("isFromThisMonth() returns true for date within current month")
     void testIsFromThisMonthTrue() {
+        // Test with today
         brick.setBrickDate(LocalDate.now());
         assertTrue(brick.isFromThisMonth());
 
-        brick.setBrickDate(LocalDate.now().minusDays(15));
+        // Test with first day of current month
+        brick.setBrickDate(LocalDate.now().withDayOfMonth(1));
         assertTrue(brick.isFromThisMonth());
+        
+        // Test with middle of month (if month has enough days)
+        LocalDate today = LocalDate.now();
+        if (today.lengthOfMonth() >= 15) {
+            brick.setBrickDate(LocalDate.now().withDayOfMonth(15));
+            assertTrue(brick.isFromThisMonth());
+        }
     }
 
     @Test
