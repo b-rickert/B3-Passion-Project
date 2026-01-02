@@ -3,29 +3,63 @@ package com.b3.service;
 import com.b3.model.Exercise;
 import com.b3.repository.ExerciseRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
  * TDD Tests for ExerciseApiService
  */
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("ExerciseApiService Tests")
 class ExerciseApiServiceTest {
 
-    @MockBean
+    @Mock
     private ExerciseRepository exerciseRepository;
 
-    @Autowired
+    @Mock
+    private WebClient.Builder webClientBuilder;
+
+    @Mock
+    private WebClient webClient;
+
+    @InjectMocks
     private ExerciseApiService exerciseApiService;
+
+    @BeforeEach
+    void setUp() {
+        when(webClientBuilder.baseUrl(anyString()))
+            .thenReturn(webClientBuilder);
+
+        when(webClientBuilder.defaultHeader(anyString(), anyString()))
+            .thenReturn(webClientBuilder);
+
+        when(webClientBuilder.build())
+            .thenReturn(webClient);
+    }
+
+
 
     @Test
     @DisplayName("Should fetch exercises by body part from API")

@@ -1,74 +1,68 @@
-package com.b3.dto;
+package com.b3.dto.response;
 
 import java.time.LocalDate;
 
 /**
- * DTO for Brick entity
+ * Response DTO for brick
  */
-public class BrickDTO {
-    
+public class BrickResponse {
+
     private Long brickId;
     private Long profileId;
     private Long sessionId;
     private LocalDate brickDate;
-    private String brickType;
-    private String brickStatus;
     private String brickColor;
-    
-    // Getters and Setters
+    private Boolean isFirstOfMonth;
+
+    // =====================================================
+    // GETTERS AND SETTERS
+    // =====================================================
+
     public Long getBrickId() {
         return brickId;
     }
-    
+
     public void setBrickId(Long brickId) {
         this.brickId = brickId;
     }
-    
+
     public Long getProfileId() {
         return profileId;
     }
-    
+
     public void setProfileId(Long profileId) {
         this.profileId = profileId;
     }
-    
+
     public Long getSessionId() {
         return sessionId;
     }
-    
+
     public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
-    
+
     public LocalDate getBrickDate() {
         return brickDate;
     }
-    
+
     public void setBrickDate(LocalDate brickDate) {
         this.brickDate = brickDate;
     }
-    
-    public String getBrickType() {
-        return brickType;
-    }
-    
-    public void setBrickType(String brickType) {
-        this.brickType = brickType;
-    }
-    
-    public String getBrickStatus() {
-        return brickStatus;
-    }
-    
-    public void setBrickStatus(String brickStatus) {
-        this.brickStatus = brickStatus;
-    }
-    
+
     public String getBrickColor() {
         return brickColor;
     }
-    
+
     public void setBrickColor(String brickColor) {
         this.brickColor = brickColor;
+    }
+
+    public Boolean getIsFirstOfMonth() {
+        return isFirstOfMonth;
+    }
+
+    public void setIsFirstOfMonth(Boolean isFirstOfMonth) {
+        this.isFirstOfMonth = isFirstOfMonth;
     }
 }

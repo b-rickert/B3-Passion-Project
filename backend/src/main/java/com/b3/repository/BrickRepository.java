@@ -81,4 +81,25 @@ public interface BrickRepository extends JpaRepository<Brick, Long> {
         UserProfile userProfile,
         Brick.BrickStatus status
     );
+
+    /**
+     * Find bricks for a user within date range
+     */
+    List<Brick> findByUserProfile_ProfileIdAndBrickDateBetween(
+        Long profileId, LocalDate startDate, LocalDate endDate);
+    
+    /**
+     * Find all bricks for a user, ordered by date (newest first)
+     */
+    List<Brick> findByUserProfile_ProfileIdOrderByBrickDateDesc(Long profileId);
+    
+    /**
+     * Count total bricks for a user
+     */
+    Long countByUserProfile_ProfileId(Long profileId);
+    
+    /**
+     * Check if brick exists for user on specific date
+     */
+    boolean existsByUserProfile_ProfileIdAndBrickDate(Long profileId, LocalDate brickDate);
 }

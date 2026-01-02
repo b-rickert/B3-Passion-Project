@@ -4,17 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
 import java.util.Objects;
 
 /**
- * Brick entity - visual progress tracking element
+ * Brick entity - represents a completed workout day
  * 
- * Represents a single brick in the brick wall calendar.
- * One brick is created for each completed workout.
- * Milestone bricks can also be created for achievements.
+ * The brick metaphor: each workout completion is a brick
+ * in building your fitness wall.
  */
 @Entity
 @Table(name = "brick")
@@ -27,13 +23,13 @@ public class Brick {
 
     public enum BrickType {
         WORKOUT,
+        STREAK_BONUS,
         MILESTONE
     }
 
     public enum BrickStatus {
-        LAID,       // Workout completed
-        MISSED,     // No workout (unplanned)
-        RECOVERY    // Planned rest day
+        ACTIVE,
+        ARCHIVED
     }
 
     // ========================================================================
@@ -53,7 +49,7 @@ public class Brick {
     @JoinColumn(name = "profile_id", nullable = false)
     private UserProfile userProfile;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
     private WorkoutSession workoutSession;
 
@@ -70,15 +66,13 @@ public class Brick {
     @Column(name = "brick_type", nullable = false, length = 20)
     private BrickType brickType;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
-    private BrickStatus status;
+    @Column(name = "brick_status", nullable = false, length = 20)
+    private BrickStatus brickStatus;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
-    private String notes;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "brick_color", length = 20)
+    private String brickColor;
 
     // ========================================================================
     // CONSTRUCTORS
@@ -86,27 +80,14 @@ public class Brick {
 
     public Brick() {}
 
-    public Brick(UserProfile userProfile, WorkoutSession workoutSession, LocalDate brickDate, BrickType brickType) {
+    public Brick(UserProfile userProfile, WorkoutSession workoutSession, 
+                 LocalDate brickDate, BrickType brickType) {
         this.userProfile = userProfile;
         this.workoutSession = workoutSession;
         this.brickDate = brickDate;
         this.brickType = brickType;
-    }
-
-    public Brick(UserProfile userProfile, LocalDate brickDate, BrickStatus status) {
-        this.userProfile = userProfile;
-        this.brickDate = brickDate;
-        this.status = status;
-        this.brickType = BrickType.WORKOUT;
-    }
-
-    // ========================================================================
-    // JPA CALLBACKS
-    // ========================================================================
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.brickStatus = BrickStatus.ACTIVE;
+        this.brickColor = generateBrickColor();
     }
 
     // ========================================================================
@@ -114,58 +95,17 @@ public class Brick {
     // ========================================================================
 
     /**
-     * Check if this is a workout brick
+     * Archive this brick (soft delete)
      */
-    public boolean isWorkoutBrick() {
-        return brickType == BrickType.WORKOUT;
+    public void archive() {
+        this.brickStatus = BrickStatus.ARCHIVED;
     }
 
     /**
-     * Check if this is a milestone brick
+     * Check if brick is archived
      */
-    public boolean isMilestoneBrick() {
-        return brickType == BrickType.MILESTONE;
-    }
-
-    /**
-     * Check if brick represents a completed workout
-     */
-    public boolean isLaid() {
-        return status == BrickStatus.LAID;
-    }
-
-    /**
-     * Check if brick represents a missed workout
-     */
-    public boolean isMissed() {
-        return status == BrickStatus.MISSED;
-    }
-
-    /**
-     * Check if brick represents a recovery day
-     */
-    public boolean isRecovery() {
-        return status == BrickStatus.RECOVERY;
-    }
-
-    /**
-     * Check if brick is from today
-     */
-    public boolean isFromToday() {
-        return brickDate != null && brickDate.equals(LocalDate.now());
-    }
-
-    /**
-     * Check if brick is from current week
-     */
-    public boolean isFromThisWeek() {
-        if (brickDate == null) return false;
-        
-        LocalDate today = LocalDate.now();
-        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
-        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
-        
-        return !brickDate.isBefore(startOfWeek) && !brickDate.isAfter(endOfWeek);
+    public boolean isArchived() {
+        return brickStatus == BrickStatus.ARCHIVED;
     }
 
     /**
@@ -173,28 +113,32 @@ public class Brick {
      */
     public boolean isFromThisMonth() {
         if (brickDate == null) return false;
-        
         LocalDate today = LocalDate.now();
         return brickDate.getYear() == today.getYear() && 
                brickDate.getMonth() == today.getMonth();
     }
 
     /**
-     * Get number of days ago this brick was created
+     * Check if this brick is the first of the month
      */
-    public long getDaysAgo() {
-        if (brickDate == null) return 0;
-        return ChronoUnit.DAYS.between(brickDate, LocalDate.now());
+    public boolean isFirstOfMonth() {
+        return brickDate != null && brickDate.getDayOfMonth() == 1;
     }
 
     /**
-     * Get workout name from associated session
+     * Generate brick color based on type
      */
-    public String getWorkoutName() {
-        if (workoutSession != null && workoutSession.getWorkout() != null) {
-            return workoutSession.getWorkout().getName();
+    private String generateBrickColor() {
+        switch (brickType) {
+            case WORKOUT:
+                return "#E67E22"; // Orange
+            case STREAK_BONUS:
+                return "#F39C12"; // Gold
+            case MILESTONE:
+                return "#9B59B6"; // Purple
+            default:
+                return "#95A5A6"; // Gray
         }
-        return "Unknown";
     }
 
     // ========================================================================
@@ -241,25 +185,73 @@ public class Brick {
         this.brickType = brickType;
     }
 
-    public BrickStatus getStatus() {
-        return status;
+    public BrickStatus getBrickStatus() {
+        return brickStatus;
     }
 
-    public void setStatus(BrickStatus status) {
-        this.status = status;
+    public void setBrickStatus(BrickStatus brickStatus) {
+        this.brickStatus = brickStatus;
     }
 
-    public String getNotes() {
-        return notes;
+    public String getBrickColor() {
+        return brickColor;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setBrickColor(String brickColor) {
+        this.brickColor = brickColor;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    /**
+     * Check if brick is a workout brick
+     */
+    public boolean isWorkoutBrick() {
+        return brickType == BrickType.WORKOUT;
     }
+
+    /**
+     * Check if brick is a milestone brick
+     */
+    public boolean isMilestoneBrick() {
+        return brickType == BrickType.MILESTONE;
+    }
+
+    /**
+     * Check if brick is from today
+     */
+    public boolean isFromToday() {
+        return brickDate != null && brickDate.equals(LocalDate.now());
+    }
+
+    /**
+     * Check if brick is from this week
+     */
+    public boolean isFromThisWeek() {
+        if (brickDate == null) return false;
+        LocalDate today = LocalDate.now();
+        LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        LocalDate weekEnd = weekStart.plusDays(6);
+        return !brickDate.isBefore(weekStart) && !brickDate.isAfter(weekEnd);
+    }
+
+    /**
+     * Get how many days ago this brick was created
+     */
+    public long getDaysAgo() {
+        if (brickDate == null) return 0;
+        return java.time.temporal.ChronoUnit.DAYS.between(brickDate, LocalDate.now());
+    }
+
+    /**
+     * Get the workout name from the session
+     */
+    public String getWorkoutName() {
+        if (workoutSession != null && workoutSession.getWorkout() != null) {
+            String name = workoutSession.getWorkout().getName();
+            return name != null ? name : "Unknown";
+        }
+        return "Unknown";
+    }
+
 
     // ========================================================================
     // OBJECT OVERRIDES
@@ -269,10 +261,9 @@ public class Brick {
     public String toString() {
         return "Brick{" +
                 "brickId=" + brickId +
-                ", brickType=" + brickType +
-                ", status=" + status +
                 ", brickDate=" + brickDate +
-                ", daysAgo=" + getDaysAgo() +
+                ", brickType=" + brickType +
+                ", brickStatus=" + brickStatus +
                 '}';
     }
 

@@ -1,92 +1,99 @@
 package com.b3.mapper;
 
 import com.b3.dto.BrickDTO;
-import com.b3.dto.BrickWallDTO;
 import com.b3.model.Brick;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 /**
- * Mapper utility for Brick entity <-> DTO conversions
+ * Mapper for converting between Brick entity and BrickDTO
  */
+@Component
 public class BrickMapper {
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    // ========================================================================
+    // ENTITY TO DTO
+    // ========================================================================
 
     /**
      * Convert Brick entity to BrickDTO
      */
-    public static BrickDTO toDTO(Brick entity) {
+    public BrickDTO toDTO(Brick entity) {
         if (entity == null) {
             return null;
         }
 
-        String workoutName = null;
-        Integer workoutDuration = null;
+        BrickDTO dto = new BrickDTO();
+        dto.setBrickId(entity.getBrickId());
+        dto.setProfileId(entity.getUserProfile().getProfileId());
         
-        // Get workout details from session if available
-        if (entity.getWorkoutSession() != null && entity.getWorkoutSession().getWorkout() != null) {
-            workoutName = entity.getWorkoutSession().getWorkout().getName();
-            workoutDuration = (int) entity.getWorkoutSession().getDurationMinutes();
+        if (entity.getWorkoutSession() != null) {
+            dto.setSessionId(entity.getWorkoutSession().getSessionId());
         }
+        
+        dto.setBrickDate(entity.getBrickDate());
+        dto.setBrickType(entity.getBrickType().name());
+        dto.setBrickStatus(entity.getBrickStatus().name());
+        dto.setBrickColor(entity.getBrickColor());
 
-        return new BrickDTO(
-            entity.getBrickId(),
-            entity.getBrickDate() != null ? entity.getBrickDate().format(DATE_FORMATTER) : null,
-            entity.getStatus() != null ? entity.getStatus().name() : null,
-            getColorForStatus(entity.getStatus()),
-            entity.getNotes(),
-            workoutName,
-            workoutDuration
-        );
+        return dto;
     }
 
+    // ========================================================================
+    // DTO TO ENTITY
+    // ========================================================================
+
     /**
-     * Convert list of Bricks to BrickWallDTO
+     * Convert BrickDTO to Brick entity (for updates)
+     * Note: For creation, use the Brick constructor
      */
-    public static BrickWallDTO toBrickWallDTO(List<Brick> bricks, String month, String year, 
-                                              Integer currentStreak, Integer totalBricksLaid) {
-        if (bricks == null) {
+    public Brick toEntity(BrickDTO dto) {
+        if (dto == null) {
             return null;
         }
 
-        List<BrickDTO> brickDTOs = bricks.stream()
-            .map(BrickMapper::toDTO)
-            .collect(Collectors.toList());
+        Brick entity = new Brick();
+        entity.setBrickId(dto.getBrickId());
+        entity.setBrickDate(dto.getBrickDate());
+        
+        if (dto.getBrickType() != null) {
+            entity.setBrickType(Brick.BrickType.valueOf(dto.getBrickType()));
+        }
+        
+        if (dto.getBrickStatus() != null) {
+            entity.setBrickStatus(Brick.BrickStatus.valueOf(dto.getBrickStatus()));
+        }
+        
+        entity.setBrickColor(dto.getBrickColor());
 
-        int totalDays = bricks.size();
-        int consistencyPercentage = totalDays > 0 
-            ? (int) ((totalBricksLaid * 100.0) / totalDays) 
-            : 0;
-
-        return new BrickWallDTO(
-            month,
-            year,
-            currentStreak,
-            totalBricksLaid,
-            consistencyPercentage,
-            brickDTOs
-        );
+        return entity;
     }
 
+    // ========================================================================
+    // UPDATE ENTITY FROM DTO
+    // ========================================================================
+
     /**
-     * Get hex color code based on brick status
+     * Update existing Brick entity from DTO
      */
-    private static String getColorForStatus(Brick.BrickStatus status) {
-        if (status == null) {
-            return "#E5E7EB"; // Gray for null/empty
+    public void updateEntityFromDTO(Brick entity, BrickDTO dto) {
+        if (entity == null || dto == null) {
+            return;
         }
 
-        switch (status) {
-            case LAID:
-                return "#FF6B35"; // Orange - workout completed
-            case MISSED:
-                return "#94A3B8"; // Light gray - missed workout
-            case RECOVERY:
-                return "#3B82F6"; // Blue - recovery day
-            default:
-                return "#E5E7EB"; // Default gray
+        if (dto.getBrickDate() != null) {
+            entity.setBrickDate(dto.getBrickDate());
+        }
+
+        if (dto.getBrickType() != null) {
+            entity.setBrickType(Brick.BrickType.valueOf(dto.getBrickType()));
+        }
+
+        if (dto.getBrickStatus() != null) {
+            entity.setBrickStatus(Brick.BrickStatus.valueOf(dto.getBrickStatus()));
+        }
+
+        if (dto.getBrickColor() != null) {
+            entity.setBrickColor(dto.getBrickColor());
         }
     }
 }
