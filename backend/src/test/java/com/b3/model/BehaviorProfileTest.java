@@ -391,9 +391,17 @@ class BehaviorProfileTest {
     @Test
     @DisplayName("Should set and get avgWorkoutTimeOfDay")
     void testSetAvgWorkoutTimeOfDay() {
-        behaviorProfile.setAvgWorkoutTimeOfDay("morning");
-        assertEquals("morning", behaviorProfile.getAvgWorkoutTimeOfDay());
+        behaviorProfile.setAvgWorkoutTimeOfDay(BehaviorProfile.PreferredTime.MORNING);
+        assertEquals(BehaviorProfile.PreferredTime.MORNING, behaviorProfile.getAvgWorkoutTimeOfDay());
     }
+
+    @Test
+    @DisplayName("Should set and get preferredWorkoutTime")
+    void testSetPreferredWorkoutTime() {
+        behaviorProfile.setPreferredWorkoutTime(BehaviorProfile.PreferredTime.EVENING);
+        assertEquals(BehaviorProfile.PreferredTime.EVENING, behaviorProfile.getPreferredWorkoutTime());
+    }
+    
 
     @Test
     @DisplayName("Should set and get preferredWorkoutTypes")
@@ -412,8 +420,8 @@ class BehaviorProfileTest {
     @Test
     @DisplayName("Should set and get stressTrend")
     void testSetStressTrend() {
-        behaviorProfile.setStressTrend("stable");
-        assertEquals("stable", behaviorProfile.getStressTrend());
+        behaviorProfile.setStressTrend(BehaviorProfile.StressTrend.STABLE);
+        assertEquals(BehaviorProfile.StressTrend.STABLE, behaviorProfile.getStressTrend());
     }
 
     @Test
