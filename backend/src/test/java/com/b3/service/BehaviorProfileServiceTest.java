@@ -146,7 +146,7 @@ class BehaviorProfileServiceTest {
         assertEquals(0.525, consistency, 0.001);
         assertTrue(consistency < 0.75); // Declined from previous
     }
-git
+
     @Test
     @DisplayName("Should create behavior profile for new user")
     void testCreateBehaviorProfile() {
