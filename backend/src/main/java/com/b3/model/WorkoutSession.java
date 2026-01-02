@@ -29,6 +29,13 @@ public class WorkoutSession {
         SKIPPED
     }
 
+    public enum PerformanceRating {
+        EXCELLENT,
+        GOOD,
+        AVERAGE,
+        POOR
+    }
+
     // ========================================================================
     // FIELDS
     // ========================================================================
@@ -74,6 +81,16 @@ public class WorkoutSession {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "actual_duration")
+    private Integer actualDuration;
+
+    @Column(name = "notes", length = 500)
+    private String notes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "performance_rating")
+    private PerformanceRating performanceRating;
+
     // ========================================================================
     // CONSTRUCTORS
     // ========================================================================
@@ -101,12 +118,27 @@ public class WorkoutSession {
     // ========================================================================
 
     /**
-     * Mark session as completed with difficulty rating
+     * Mark session as completed with actual duration
      */
-    public void completeSession(Integer perceivedDifficulty) {
+    public void completeSession(Integer actualDuration) {
         this.endTime = LocalDateTime.now();
         this.completionStatus = CompletionStatus.COMPLETED;
-        this.perceivedDifficulty = perceivedDifficulty;
+        this.actualDuration = actualDuration;
+        this.perceivedDifficulty =4;
+        
+        // Auto-calculate performance rating based on duration
+        if (this.workout != null && this.workout.getEstimatedDuration() != null) {
+            int estimated = this.workout.getEstimatedDuration();
+            if (actualDuration <= estimated) {
+                this.performanceRating = PerformanceRating.EXCELLENT;
+            } else if (actualDuration <= estimated * 1.2) {
+                this.performanceRating = PerformanceRating.GOOD;
+            } else if (actualDuration <= estimated * 1.5) {
+                this.performanceRating = PerformanceRating.AVERAGE;
+            } else {
+                this.performanceRating = PerformanceRating.POOR;
+            }
+        }
     }
 
     /**
@@ -216,6 +248,22 @@ public class WorkoutSession {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public Integer getActualDuration() {
+        return actualDuration;
+    }
+
+    public WorkoutSession.PerformanceRating getPerformanceRating() {
+        return performanceRating;
     }
 
     // ========================================================================

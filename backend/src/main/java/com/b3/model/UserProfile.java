@@ -190,6 +190,16 @@ public class UserProfile {
         this.currentStreak = 0;
     }
 
+    /**
+     * Update workout streak
+     */
+    public void updateStreak() {
+        this.currentStreak++;
+        if (this.currentStreak > this.longestStreak) {
+            this.longestStreak = this.currentStreak;
+        }
+    }
+
     // ========================================================================
     // GETTERS AND SETTERS
     // ========================================================================

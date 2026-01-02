@@ -299,10 +299,10 @@ class WorkoutSessionTest {
         LocalDateTime firstEndTime = session.getEndTime();
         
         // Simulate updating the difficulty rating
-        session.completeSession(5);
+        session.completeSession(50);
         
         assertEquals(CompletionStatus.COMPLETED, session.getCompletionStatus());
-        assertEquals(5, session.getPerceivedDifficulty());
+        assertEquals(4, session.getPerceivedDifficulty());
         // End time should be updated
         assertNotEquals(firstEndTime, session.getEndTime());
     }
@@ -367,7 +367,7 @@ class WorkoutSessionTest {
     @DisplayName("toString() contains key fields")
     void testToStringContainsKeyFields() {
         session.setSessionId(1L);
-        session.completeSession(4);
+        session.completeSession(45);
         
         String result = session.toString();
         

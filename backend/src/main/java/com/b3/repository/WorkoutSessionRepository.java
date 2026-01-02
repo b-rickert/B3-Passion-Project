@@ -83,4 +83,16 @@ public interface WorkoutSessionRepository extends JpaRepository<WorkoutSession, 
            "WHERE ws.userProfile = :user " +
            "ORDER BY ws.startTime DESC")
     List<WorkoutSession> findUserWorkoutHistory(@Param("user") UserProfile user);
+
+     /**
+     * Find active (in-progress) session for a user
+     */
+    @Query("SELECT ws FROM WorkoutSession ws WHERE ws.userProfile.profileId = :profileId " +
+           "AND ws.completionStatus = 'IN_PROGRESS'")
+    Optional<WorkoutSession> findActiveSessionByProfileId(@Param("profileId") Long profileId);
+    
+    /**
+     * Find all sessions for a user, ordered by start time (newest first)
+     */
+    List<WorkoutSession> findByUserProfile_ProfileIdOrderByStartTimeDesc(Long profileId);
 }
