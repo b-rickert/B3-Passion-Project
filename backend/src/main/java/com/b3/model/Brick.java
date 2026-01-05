@@ -13,7 +13,10 @@ import java.util.Objects;
  * in building your fitness wall.
  */
 @Entity
-@Table(name = "brick")
+@Table(name = "brick", indexes = {
+    @Index(name = "idx_brick_date", columnList = "brick_date"),
+    @Index(name = "idx_brick_profile", columnList = "profile_id")
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Brick {
 

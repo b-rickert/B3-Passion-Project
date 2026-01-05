@@ -14,7 +14,10 @@ import java.util.Objects;
  * completion status, and perceived difficulty.
  */
 @Entity
-@Table(name = "workout_session")
+@Table(name = "workout_session", indexes = {
+    @Index(name = "idx_session_created", columnList = "created_at"),
+    @Index(name = "idx_session_profile", columnList = "profile_id")
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkoutSession {
 

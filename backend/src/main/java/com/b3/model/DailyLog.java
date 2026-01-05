@@ -14,8 +14,12 @@ import java.util.Objects;
  * One log per day maximum (enforced by unique constraint).
  */
 @Entity
-@Table(name = "daily_log", 
-       uniqueConstraints = @UniqueConstraint(columnNames = {"profile_id", "log_date"}))
+@Table(name = "daily_log",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"profile_id", "log_date"}),
+       indexes = {
+           @Index(name = "idx_dailylog_date", columnList = "log_date"),
+           @Index(name = "idx_dailylog_profile", columnList = "profile_id")
+       })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DailyLog {
 
