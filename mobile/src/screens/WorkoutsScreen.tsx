@@ -1,19 +1,24 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../components';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../constants/theme';
 import { workoutApi } from '../services/api';
 import { WorkoutResponse } from '../types/api';
+
+const orangeOutline = {
+  borderWidth: 2,
+  borderColor: colors.orange.DEFAULT,
+};
 
 export default function WorkoutsScreen() {
   const navigation = useNavigation();
   const [workouts, setWorkouts] = useState<WorkoutResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -38,43 +43,34 @@ export default function WorkoutsScreen() {
     loadData();
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'BEGINNER':
-        return colors.green.DEFAULT;
-      case 'INTERMEDIATE':
-        return colors.amber.DEFAULT;
-      case 'ADVANCED':
-        return colors.red.DEFAULT;
-      default:
-        return colors.text.secondary;
+  const getDifficultyColor = (level: string) => {
+    switch (level) {
+      case 'BEGINNER': return colors.green.DEFAULT;
+      case 'INTERMEDIATE': return colors.amber.DEFAULT;
+      case 'ADVANCED': return colors.red.DEFAULT;
+      default: return colors.text.muted;
     }
   };
 
-  const getWorkoutTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): any => {
     switch (type) {
-      case 'STRENGTH':
-        return 'barbell-outline';
-      case 'CARDIO':
-        return 'heart-outline';
-      case 'FLEXIBILITY':
-        return 'body-outline';
-      default:
-        return 'fitness-outline';
+      case 'STRENGTH': return 'barbell';
+      case 'CARDIO': return 'heart';
+      case 'FLEXIBILITY': return 'body';
+      case 'MIXED': return 'fitness';
+      default: return 'barbell';
     }
   };
 
-  const filters = ['All', 'STRENGTH', 'CARDIO', 'FLEXIBILITY'];
+  const filterTypes = ['All', 'STRENGTH', 'CARDIO', 'FLEXIBILITY', 'MIXED'];
 
-  const filteredWorkouts = selectedFilter && selectedFilter !== 'All'
-    ? workouts.filter((w) => w.workoutType === selectedFilter)
+  const filteredWorkouts = selectedType && selectedType !== 'All'
+    ? workouts.filter(w => w.workoutType === selectedType)
     : workouts;
-
-  const recommendedWorkout = workouts[0]; // First workout as recommendation
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.secondary }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: colors.text.secondary }}>Loading workouts...</Text>
         </View>
@@ -83,172 +79,141 @@ export default function WorkoutsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }}>
+    <View style={{ flex: 1, backgroundColor: colors.background.secondary }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />
         }
       >
-        {/* Header */}
-        <View
+        {/* Blue Gradient Header */}
+        <LinearGradient
+          colors={['#2563eb', '#3b82f6', '#60a5fa']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={{
-            backgroundColor: colors.blue.DEFAULT,
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 24,
-            borderBottomLeftRadius: 24,
-            borderBottomRightRadius: 24,
+            paddingTop: 50,
+            paddingBottom: 30,
+            paddingHorizontal: 20,
+            borderBottomLeftRadius: 20,
+            borderBottomRightRadius: 20,
+            borderWidth: 2,
+            borderColor: colors.orange.DEFAULT,
+            borderTopWidth: 0,
           }}
         >
-          <Text style={{ color: colors.text.primary, fontSize: 28, fontWeight: '800', marginBottom: 16 }}>
-            Workouts
+          <Text style={{ color: '#fff', fontSize: 28, fontWeight: '800' }}>
+            Workouts 💪
           </Text>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 4 }}>
+            {workouts.length} workouts available
+          </Text>
+        </LinearGradient>
 
-          {/* BRIX Recommendation */}
-          {recommendedWorkout && (
-            <TouchableOpacity
-              onPress={() => console.log('Navigate to workout detail:', recommendedWorkout.workoutId)}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                borderRadius: 12,
-                padding: 16,
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Ionicons name="flash" size={16} color={colors.orange.DEFAULT} />
-                <Text style={{ color: colors.orange.DEFAULT, fontSize: 12, fontWeight: '600', marginLeft: 4 }}>
-                  BRIX RECOMMENDS
-                </Text>
-              </View>
-              <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '600' }}>
-                {recommendedWorkout.name}
-              </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
-                {recommendedWorkout.estimatedDuration} min • {recommendedWorkout.difficultyLevel}
-              </Text>
-            </TouchableOpacity>
-          )}
+        {/* Filter Chips */}
+        <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {filterTypes.map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => setSelectedType(type === 'All' ? null : type)}
+                  style={{
+                    backgroundColor: (selectedType === type || (type === 'All' && !selectedType))
+                      ? colors.orange.DEFAULT
+                      : colors.background.tertiary,
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                    ...orangeOutline,
+                  }}
+                >
+                  <Text style={{ color: colors.text.primary, fontSize: 14, fontWeight: '600' }}>
+                    {type === 'All' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
         </View>
 
-        {/* Filters */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginTop: 16 }}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-        >
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              onPress={() => setSelectedFilter(filter === 'All' ? null : filter)}
-              style={{
-                backgroundColor:
-                  (filter === 'All' && !selectedFilter) || filter === selectedFilter
-                    ? colors.orange.DEFAULT
-                    : colors.background.secondary,
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 20,
-              }}
-            >
-              <Text
-                style={{
-                  color:
-                    (filter === 'All' && !selectedFilter) || filter === selectedFilter
-                      ? colors.text.primary
-                      : colors.text.secondary,
-                  fontWeight: '500',
-                }}
-              >
-                {filter === 'All' ? 'All' : filter.charAt(0) + filter.slice(1).toLowerCase()}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Workout List */}
-        <View style={{ paddingHorizontal: 16, marginTop: 16, gap: 12 }}>
+        {/* Workout Cards */}
+        <View style={{ paddingHorizontal: 20, marginTop: 16, gap: 12 }}>
           {filteredWorkouts.map((workout) => (
             <TouchableOpacity
               key={workout.workoutId}
-              onPress={() => console.log('Navigate to workout detail:', workout.workoutId)}
-              activeOpacity={0.7}
+              onPress={() => console.log('Navigate to workout', workout.workoutId)}
+              activeOpacity={0.9}
             >
-              <Card>
+              <View
+                style={{
+                  backgroundColor: colors.background.tertiary,
+                  borderRadius: 16,
+                  padding: 16,
+                  ...orangeOutline,
+                }}
+              >
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  {/* Icon */}
-                  <View
+                  <LinearGradient
+                    colors={['#3b82f6', '#2563eb']}
                     style={{
-                      backgroundColor: colors.background.tertiary,
-                      width: 48,
-                      height: 48,
+                      width: 50,
+                      height: 50,
                       borderRadius: 12,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      marginRight: 12,
+                      marginRight: 14,
                     }}
                   >
-                    <Ionicons
-                      name={getWorkoutTypeIcon(workout.workoutType) as any}
-                      size={24}
-                      color={colors.blue.DEFAULT}
-                    />
-                  </View>
+                    <Ionicons name={getTypeIcon(workout.workoutType)} size={24} color="#fff" />
+                  </LinearGradient>
 
-                  {/* Info */}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600', marginBottom: 4 }}>
+                    <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '700' }}>
                       {workout.name}
                     </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name="time-outline" size={14} color={colors.text.secondary} />
-                        <Text style={{ color: colors.text.secondary, fontSize: 12, marginLeft: 4 }}>
-                          {workout.estimatedDuration} min
-                        </Text>
-                      </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      <Ionicons name="time-outline" size={14} color={colors.text.muted} />
+                      <Text style={{ color: colors.text.muted, fontSize: 13, marginLeft: 4 }}>
+                        {workout.estimatedDuration} min
+                      </Text>
                       <View
                         style={{
                           width: 4,
                           height: 4,
                           borderRadius: 2,
                           backgroundColor: colors.text.muted,
+                          marginHorizontal: 8,
                         }}
                       />
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <View
-                          style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: getDifficultyColor(workout.difficultyLevel),
-                            marginRight: 4,
-                          }}
-                        />
-                        <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
-                          {workout.difficultyLevel.charAt(0) + workout.difficultyLevel.slice(1).toLowerCase()}
-                        </Text>
-                      </View>
+                      <Text style={{ color: colors.text.secondary, fontSize: 13 }}>
+                        {workout.workoutType.charAt(0) + workout.workoutType.slice(1).toLowerCase()}
+                      </Text>
                     </View>
                   </View>
 
-                  {/* Arrow */}
-                  <Ionicons name="chevron-forward" size={20} color={colors.text.muted} />
-                </View>
-
-                {/* Equipment Tag */}
-                {workout.requiredEquipment && (
-                  <View style={{ marginTop: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <View
                       style={{
-                        backgroundColor: colors.background.tertiary,
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: getDifficultyColor(workout.difficultyLevel),
+                      }}
+                    />
+                    <Ionicons name="chevron-forward" size={20} color={colors.text.muted} />
+                  </View>
+                </View>
+
+                {workout.requiredEquipment && (
+                  <View style={{ marginTop: 12, flexDirection: 'row' }}>
+                    <View
+                      style={{
+                        backgroundColor: colors.background.elevated,
+                        paddingHorizontal: 10,
                         paddingVertical: 4,
-                        paddingHorizontal: 8,
-                        borderRadius: 4,
-                        alignSelf: 'flex-start',
+                        borderRadius: 6,
                       }}
                     >
                       <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
@@ -257,11 +222,28 @@ export default function WorkoutsScreen() {
                     </View>
                   </View>
                 )}
-              </Card>
+              </View>
             </TouchableOpacity>
           ))}
+
+          {filteredWorkouts.length === 0 && (
+            <View
+              style={{
+                backgroundColor: colors.background.tertiary,
+                borderRadius: 16,
+                padding: 32,
+                alignItems: 'center',
+                ...orangeOutline,
+              }}
+            >
+              <Text style={{ fontSize: 40, marginBottom: 12 }}>🔍</Text>
+              <Text style={{ color: colors.text.secondary, textAlign: 'center' }}>
+                No workouts found for this filter
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,7 +1,3 @@
-// ============================================================
-// B3 DESIGN SYSTEM - Theme Constants
-// ============================================================
-
 export const colors = {
   background: {
     primary: '#09090b',
@@ -44,9 +40,9 @@ export const colors = {
   
   brick: {
     workout: '#E67E22',
-    streakBonus: '#F39C12',
-    milestone: '#9B59B6',
-    inactive: '#95A5A6',
+    streakBonus: '#3b82f6',
+    milestone: '#22c55e',
+    inactive: '#3f3f46',
   },
 };
 
