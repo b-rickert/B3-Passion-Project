@@ -19,9 +19,9 @@ function TabNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#18181b',
-          borderTopColor: '#3f3f46',
-          borderTopWidth: 1,
+          backgroundColor: '#27272a',
+          borderTopColor: '#f97316',
+          borderTopWidth: 2,
           height: 80,
           paddingBottom: 10,
           paddingTop: 10,
