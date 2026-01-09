@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,14 @@ import { WorkoutResponse } from '../types/api';
 const orangeOutline = {
   borderWidth: 2,
   borderColor: colors.orange.DEFAULT,
+};
+
+const orangeGlow = {
+  shadowColor: colors.orange.DEFAULT,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.4,
+  shadowRadius: 12,
+  elevation: 8,
 };
 
 export default function WorkoutsScreen() {
@@ -68,6 +76,13 @@ export default function WorkoutsScreen() {
     ? workouts.filter(w => w.workoutType === selectedType)
     : workouts;
 
+  // Get recommended workout (first one for now, could be smarter later)
+  const recommendedWorkout = workouts.length > 0 ? workouts[0] : null;
+
+  const handleWorkoutPress = (workoutId: number) => {
+    navigation.navigate('WorkoutDetail' as never, { workoutId } as never);
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.secondary }}>
@@ -111,8 +126,105 @@ export default function WorkoutsScreen() {
           </Text>
         </LinearGradient>
 
+        {/* BRIX Recommendation Card */}
+        {recommendedWorkout && (
+          <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+            <TouchableOpacity
+              onPress={() => handleWorkoutPress(recommendedWorkout.workoutId)}
+              activeOpacity={0.9}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.background.tertiary,
+                  borderRadius: 20,
+                  padding: 16,
+                  ...orangeOutline,
+                  ...orangeGlow,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  <View
+                    style={{
+                      backgroundColor: colors.orange.DEFAULT,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 10,
+                    }}
+                  >
+                    <Text style={{ fontSize: 18 }}>🤖</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.orange.DEFAULT, fontSize: 12, fontWeight: '700' }}>
+                      BRIX RECOMMENDS
+                    </Text>
+                    <Text style={{ color: colors.text.secondary, fontSize: 11 }}>
+                      Based on your goals & energy
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.orange.DEFAULT} />
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <LinearGradient
+                    colors={[colors.orange.DEFAULT, colors.orange.dark]}
+                    style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: 12,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 14,
+                    }}
+                  >
+                    <Ionicons name={getTypeIcon(recommendedWorkout.workoutType)} size={24} color="#fff" />
+                  </LinearGradient>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700' }}>
+                      {recommendedWorkout.name}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      <Ionicons name="time-outline" size={14} color={colors.text.muted} />
+                      <Text style={{ color: colors.text.muted, fontSize: 13, marginLeft: 4 }}>
+                        {recommendedWorkout.estimatedDuration} min
+                      </Text>
+                      <View
+                        style={{
+                          width: 4,
+                          height: 4,
+                          borderRadius: 2,
+                          backgroundColor: colors.text.muted,
+                          marginHorizontal: 8,
+                        }}
+                      />
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: getDifficultyColor(recommendedWorkout.difficultyLevel),
+                          marginRight: 4,
+                        }}
+                      />
+                      <Text style={{ color: colors.text.muted, fontSize: 13 }}>
+                        {recommendedWorkout.difficultyLevel.charAt(0) + recommendedWorkout.difficultyLevel.slice(1).toLowerCase()}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Filter Chips */}
-        <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+          <Text style={{ color: colors.text.primary, fontSize: 18, fontWeight: '700', marginBottom: 12 }}>
+            All Workouts
+          </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {filterTypes.map((type) => (
@@ -143,7 +255,7 @@ export default function WorkoutsScreen() {
           {filteredWorkouts.map((workout) => (
             <TouchableOpacity
               key={workout.workoutId}
-              onPress={() => console.log('Navigate to workout', workout.workoutId)}
+              onPress={() => handleWorkoutPress(workout.workoutId)}
               activeOpacity={0.9}
             >
               <View

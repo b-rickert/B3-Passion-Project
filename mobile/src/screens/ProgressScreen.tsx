@@ -21,6 +21,15 @@ const orangeGlow = {
   elevation: 8,
 };
 
+// Heat map colors - cold to hot
+const STREAK_COLORS = {
+  cold: '#3b82f6',      // Blue - days 1-2
+  warming: '#06b6d4',   // Cyan - days 3-4
+  warm: '#f59e0b',      // Amber - days 5-6
+  hot: '#f97316',       // Orange - days 7+
+  milestone: '#22c55e', // Green - milestone achievements
+};
+
 export default function ProgressScreen() {
   const [brickStats, setBrickStats] = useState<BrickStatsResponse | null>(null);
   const [brickCalendar, setBrickCalendar] = useState<BrickResponse[]>([]);
@@ -59,6 +68,10 @@ export default function ProgressScreen() {
     loadData();
   };
 
+  const formatDateString = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -83,6 +96,31 @@ export default function ProgressScreen() {
   const getBrickForDate = (day: number) => {
     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return brickCalendar.find(b => b.brickDate === dateStr);
+  };
+
+  // Calculate streak length ending on this day and return appropriate heat color
+  const getStreakColor = (day: number): string => {
+    const currentDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    let streakCount = 0;
+
+    // Count backwards from this day to find streak length
+    for (let i = 0; i < 30; i++) {
+      const checkDate = new Date(currentDate);
+      checkDate.setDate(checkDate.getDate() - i);
+      const dateStr = formatDateString(checkDate);
+
+      if (brickCalendar.find(b => b.brickDate === dateStr)) {
+        streakCount++;
+      } else {
+        break;
+      }
+    }
+
+    // Return color based on streak heat
+    if (streakCount >= 7) return STREAK_COLORS.hot;
+    if (streakCount >= 5) return STREAK_COLORS.warm;
+    if (streakCount >= 3) return STREAK_COLORS.warming;
+    return STREAK_COLORS.cold;
   };
 
   const isToday = (day: number) => {
@@ -246,6 +284,7 @@ export default function ProgressScreen() {
                 const brick = day ? getBrickForDate(day) : null;
                 const today = day ? isToday(day) : false;
                 const future = day ? isFutureDate(day) : false;
+                const streakColor = day && brick ? getStreakColor(day) : null;
 
                 return (
                   <View
@@ -261,7 +300,7 @@ export default function ProgressScreen() {
                         style={{
                           flex: 1,
                           backgroundColor: brick
-                            ? colors.brick.workout
+                            ? streakColor
                             : future
                               ? 'transparent'
                               : colors.background.elevated,
@@ -269,7 +308,7 @@ export default function ProgressScreen() {
                           justifyContent: 'center',
                           alignItems: 'center',
                           borderWidth: today ? 2 : 0,
-                          borderColor: today ? colors.orange.DEFAULT : 'transparent',
+                          borderColor: today ? '#fff' : 'transparent',
                         }}
                       >
                         <Text
@@ -292,19 +331,24 @@ export default function ProgressScreen() {
               })}
             </View>
 
-            {/* Legend */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.brick.workout, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: 11 }}>Workout</Text>
+            {/* Heat Map Legend */}
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ color: colors.text.secondary, fontSize: 11, textAlign: 'center', marginBottom: 8 }}>
+                Streak Heat 🔥
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <Text style={{ color: colors.text.muted, fontSize: 10, marginRight: 4 }}>Cold</Text>
+                <View style={{ width: 20, height: 12, backgroundColor: STREAK_COLORS.cold, borderRadius: 2 }} />
+                <View style={{ width: 20, height: 12, backgroundColor: STREAK_COLORS.warming, borderRadius: 2 }} />
+                <View style={{ width: 20, height: 12, backgroundColor: STREAK_COLORS.warm, borderRadius: 2 }} />
+                <View style={{ width: 20, height: 12, backgroundColor: STREAK_COLORS.hot, borderRadius: 2 }} />
+                <Text style={{ color: colors.text.muted, fontSize: 10, marginLeft: 4 }}>Hot</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.brick.streakBonus, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: 11 }}>Streak</Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.brick.milestone, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: 11 }}>Milestone</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <View style={{ width: 12, height: 12, backgroundColor: STREAK_COLORS.milestone, borderRadius: 3 }} />
+                  <Text style={{ color: colors.text.secondary, fontSize: 11 }}>Milestone</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -350,7 +394,7 @@ export default function ProgressScreen() {
                 >
                   <View
                     style={{
-                      backgroundColor: colors.amber.DEFAULT,
+                      backgroundColor: colors.green.DEFAULT,
                       width: 44,
                       height: 44,
                       borderRadius: 22,
