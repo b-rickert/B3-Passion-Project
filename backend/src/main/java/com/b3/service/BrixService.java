@@ -14,11 +14,8 @@ import java.util.*;
 /**
  * BrixService - The AI Coach Brain
  * 
- * Handles:
- * - Workout recommendations based on energy, stress, history
- * - Tone adaptation (encouraging/challenging/empathetic)
- * - Context-triggered messages (streaks, missed days, milestones)
- * - Chat responses with personality
+ * Uses Claude AI for intelligent responses when configured,
+ * falls back to keyword-based responses otherwise.
  */
 @Service
 @Transactional
@@ -32,19 +29,22 @@ public class BrixService {
     private final DailyLogRepository dailyLogRepository;
     private final BrixMessageRepository brixMessageRepository;
     private final BrickRepository brickRepository;
+    private final ClaudeService claudeService;
 
     public BrixService(UserProfileRepository userProfileRepository,
                        BehaviorProfileRepository behaviorProfileRepository,
                        WorkoutRepository workoutRepository,
                        DailyLogRepository dailyLogRepository,
                        BrixMessageRepository brixMessageRepository,
-                       BrickRepository brickRepository) {
+                       BrickRepository brickRepository,
+                       ClaudeService claudeService) {
         this.userProfileRepository = userProfileRepository;
         this.behaviorProfileRepository = behaviorProfileRepository;
         this.workoutRepository = workoutRepository;
         this.dailyLogRepository = dailyLogRepository;
         this.brixMessageRepository = brixMessageRepository;
         this.brickRepository = brickRepository;
+        this.claudeService = claudeService;
     }
 
     // ========================================================================
@@ -69,8 +69,8 @@ public class BrixService {
         // Determine tone based on behavior
         BrixMessage.Tone tone = determineTone(behavior, todaysLog);
 
-        // Generate response based on message content
-        String response = generateChatResponse(userMessage, user, behavior, todaysLog, tone);
+        // Try Claude AI first, fall back to keyword-based
+        String response = generateResponse(userMessage, user, behavior, todaysLog, tone);
 
         // Save the message
         BrixMessage message = new BrixMessage(user, response, BrixMessage.MessageType.MOTIVATION, tone);
@@ -81,13 +81,49 @@ public class BrixService {
     }
 
     /**
-     * Generate contextual chat response
+     * Generate response - tries Claude AI first, then falls back to keywords
      */
-    private String generateChatResponse(String userMessage, UserProfile user,
-                                         BehaviorProfile behavior, DailyLog todaysLog,
-                                         BrixMessage.Tone tone) {
+    private String generateResponse(String userMessage, UserProfile user,
+                                     BehaviorProfile behavior, DailyLog todaysLog,
+                                     BrixMessage.Tone tone) {
+        
+        // Try Claude AI if configured
+        if (claudeService.isConfigured()) {
+            logger.info("Using Claude AI for response");
+            try {
+                String aiResponse = claudeService.generateBrixResponse(
+                    userMessage,
+                    user.getDisplayName().split(" ")[0],
+                    behavior != null ? behavior.getConsecutiveDays() : 0,
+                    behavior != null ? behavior.getTotalBricksLaid() : 0,
+                    todaysLog != null ? todaysLog.getEnergyLevel() : null,
+                    todaysLog != null ? todaysLog.getStressLevel() : null,
+                    todaysLog != null ? todaysLog.getMood().name() : null,
+                    user.getFitnessLevel() != null ? user.getFitnessLevel().name() : null,
+                    user.getPrimaryGoal() != null ? user.getPrimaryGoal().name() : null
+                );
+                
+                if (aiResponse != null && !aiResponse.isEmpty()) {
+                    return aiResponse;
+                }
+            } catch (Exception e) {
+                logger.error("Claude AI failed, falling back to keywords: {}", e.getMessage());
+            }
+        }
+
+        // Fall back to keyword-based response
+        logger.info("Using keyword-based response");
+        return generateKeywordResponse(userMessage, user, behavior, todaysLog, tone);
+    }
+
+    /**
+     * Keyword-based response generation (fallback)
+     */
+    private String generateKeywordResponse(String userMessage, UserProfile user,
+                                            BehaviorProfile behavior, DailyLog todaysLog,
+                                            BrixMessage.Tone tone) {
         String lowerMessage = userMessage.toLowerCase();
-        String name = user.getDisplayName().split(" ")[0]; // First name only
+        String name = user.getDisplayName().split(" ")[0];
         int streak = behavior != null ? behavior.getConsecutiveDays() : 0;
 
         // Greeting
@@ -96,33 +132,235 @@ public class BrixService {
         }
 
         // Tired/Low energy
-        if (containsAny(lowerMessage, "tired", "exhausted", "no energy", "drained", "sleepy")) {
+        if (containsAny(lowerMessage, "tired", "exhausted", "no energy", "drained", "sleepy", "low energy", "fatigued")) {
             return tiredResponse(name, todaysLog, tone);
         }
 
         // Motivated/Ready
-        if (containsAny(lowerMessage, "ready", "crush", "let's go", "pumped", "motivated", "fired up")) {
+        if (containsAny(lowerMessage, "ready", "crush", "let's go", "pumped", "motivated", "fired up", "excited")) {
             return motivatedResponse(name, streak, tone);
         }
 
         // Need motivation
-        if (containsAny(lowerMessage, "motivation", "motivate", "inspire", "struggling", "can't")) {
+        if (containsAny(lowerMessage, "motivation", "motivate", "inspire", "struggling", "can't", "help", "stuck")) {
             return motivationBoostResponse(name, behavior, tone);
         }
 
         // Workout recommendation
-        if (containsAny(lowerMessage, "workout", "what should", "recommend", "suggestion", "exercise")) {
+        if (containsAny(lowerMessage, "workout", "what should", "recommend", "suggestion", "exercise", "train")) {
             return workoutRecommendationResponse(name, todaysLog, behavior, tone);
         }
 
         // Streak/Progress questions
-        if (containsAny(lowerMessage, "streak", "progress", "how am i", "stats", "doing")) {
+        if (containsAny(lowerMessage, "streak", "progress", "how am i", "stats", "doing", "bricks")) {
             return progressResponse(name, behavior, tone);
         }
 
         // Stress
-        if (containsAny(lowerMessage, "stressed", "stress", "anxious", "overwhelmed")) {
+        if (containsAny(lowerMessage, "stressed", "stress", "anxious", "overwhelmed", "pressure")) {
             return stressResponse(name, todaysLog, tone);
+        }
+
+        // Feeling bad/down
+        if (containsAny(lowerMessage, "bad", "down", "sad", "not great", "rough", "hard day", "difficult")) {
+            return empathyResponse(name, behavior, tone);
+        }
+
+        // Default response
+        return defaultResponse(name, tone);
+    }
+
+    // ========================================================================
+    // RESPONSE GENERATORS
+    // ========================================================================
+
+    private String greetingResponse(String name, int streak, BrixMessage.Tone tone) {
+        if (streak >= 7) {
+            return String.format("Hey %s! 🔥 Look at you with that %d-day streak! You're absolutely crushing it. What can I help you with today?", name, streak);
+        } else if (streak >= 3) {
+            return String.format("Hey %s! 👋 Great to see you! You've got %d days going strong. Ready to add another brick to that wall?", name, streak);
+        } else {
+            return String.format("Hey %s! 👋 I'm BRIX, your AI fitness coach. I'm here to help you build your foundation, one brick at a time. How are you feeling today?", name);
+        }
+    }
+
+    private String tiredResponse(String name, DailyLog todaysLog, BrixMessage.Tone tone) {
+        if (todaysLog != null && todaysLog.getEnergyLevel() <= 2) {
+            return String.format("I hear you, %s. Your check-in showed low energy today, and that's totally valid. 🧱 Rest IS part of the process. Maybe a light 15-minute stretch or a walk? Your body will thank you, and tomorrow you'll come back stronger!", name);
+        }
+        return String.format("I hear you, %s! Rest is just as important as the workout itself. 🧱 Remember, even the strongest walls need time to set. Maybe try some light stretching or a short walk today? Tomorrow you'll come back stronger!", name);
+    }
+
+    private String motivatedResponse(String name, int streak, BrixMessage.Tone tone) {
+        if (streak >= 5) {
+            return String.format("THAT'S WHAT I LOVE TO HEAR, %s! 🔥 You're on a
+cat > ~/ZCWProjects/B3-Passion-Project/backend/src/main/java/com/b3/service/BrixService.java << 'ENDOFFILE'
+package com.b3.service;
+
+import com.b3.model.*;
+import com.b3.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+
+/**
+ * BrixService - The AI Coach Brain
+ * 
+ * Uses Claude AI for intelligent responses when configured,
+ * falls back to keyword-based responses otherwise.
+ */
+@Service
+@Transactional
+public class BrixService {
+
+    private static final Logger logger = LoggerFactory.getLogger(BrixService.class);
+
+    private final UserProfileRepository userProfileRepository;
+    private final BehaviorProfileRepository behaviorProfileRepository;
+    private final WorkoutRepository workoutRepository;
+    private final DailyLogRepository dailyLogRepository;
+    private final BrixMessageRepository brixMessageRepository;
+    private final BrickRepository brickRepository;
+    private final ClaudeService claudeService;
+
+    public BrixService(UserProfileRepository userProfileRepository,
+                       BehaviorProfileRepository behaviorProfileRepository,
+                       WorkoutRepository workoutRepository,
+                       DailyLogRepository dailyLogRepository,
+                       BrixMessageRepository brixMessageRepository,
+                       BrickRepository brickRepository,
+                       ClaudeService claudeService) {
+        this.userProfileRepository = userProfileRepository;
+        this.behaviorProfileRepository = behaviorProfileRepository;
+        this.workoutRepository = workoutRepository;
+        this.dailyLogRepository = dailyLogRepository;
+        this.brixMessageRepository = brixMessageRepository;
+        this.brickRepository = brickRepository;
+        this.claudeService = claudeService;
+    }
+
+    // ========================================================================
+    // CHAT RESPONSE
+    // ========================================================================
+
+    /**
+     * Generate a chat response to user message
+     */
+    public BrixChatResponse chat(Long profileId, String userMessage) {
+        logger.info("BRIX chat for user {}: {}", profileId, userMessage);
+
+        UserProfile user = userProfileRepository.findById(profileId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + profileId));
+
+        BehaviorProfile behavior = behaviorProfileRepository.findByUserProfile(user)
+                .orElse(null);
+
+        DailyLog todaysLog = dailyLogRepository.findByUserProfileAndLogDate(user, LocalDate.now())
+                .orElse(null);
+
+        // Determine tone based on behavior
+        BrixMessage.Tone tone = determineTone(behavior, todaysLog);
+
+        // Try Claude AI first, fall back to keyword-based
+        String response = generateResponse(userMessage, user, behavior, todaysLog, tone);
+
+        // Save the message
+        BrixMessage message = new BrixMessage(user, response, BrixMessage.MessageType.MOTIVATION, tone);
+        message.setContextTrigger("user_chat");
+        brixMessageRepository.save(message);
+
+        return new BrixChatResponse(response, tone.name(), getWorkoutRecommendation(profileId));
+    }
+
+    /**
+     * Generate response - tries Claude AI first, then falls back to keywords
+     */
+    private String generateResponse(String userMessage, UserProfile user,
+                                     BehaviorProfile behavior, DailyLog todaysLog,
+                                     BrixMessage.Tone tone) {
+        
+        // Try Claude AI if configured
+        if (claudeService.isConfigured()) {
+            logger.info("Using Claude AI for response");
+            try {
+                String aiResponse = claudeService.generateBrixResponse(
+                    userMessage,
+                    user.getDisplayName().split(" ")[0],
+                    behavior != null ? behavior.getConsecutiveDays() : 0,
+                    behavior != null ? behavior.getTotalBricksLaid() : 0,
+                    todaysLog != null ? todaysLog.getEnergyLevel() : null,
+                    todaysLog != null ? todaysLog.getStressLevel() : null,
+                    todaysLog != null ? todaysLog.getMood().name() : null,
+                    user.getFitnessLevel() != null ? user.getFitnessLevel().name() : null,
+                    user.getPrimaryGoal() != null ? user.getPrimaryGoal().name() : null
+                );
+                
+                if (aiResponse != null && !aiResponse.isEmpty()) {
+                    return aiResponse;
+                }
+            } catch (Exception e) {
+                logger.error("Claude AI failed, falling back to keywords: {}", e.getMessage());
+            }
+        }
+
+        // Fall back to keyword-based response
+        logger.info("Using keyword-based response");
+        return generateKeywordResponse(userMessage, user, behavior, todaysLog, tone);
+    }
+
+    /**
+     * Keyword-based response generation (fallback)
+     */
+    private String generateKeywordResponse(String userMessage, UserProfile user,
+                                            BehaviorProfile behavior, DailyLog todaysLog,
+                                            BrixMessage.Tone tone) {
+        String lowerMessage = userMessage.toLowerCase();
+        String name = user.getDisplayName().split(" ")[0];
+        int streak = behavior != null ? behavior.getConsecutiveDays() : 0;
+
+        // Greeting
+        if (containsAny(lowerMessage, "hello", "hi", "hey", "sup", "what's up")) {
+            return greetingResponse(name, streak, tone);
+        }
+
+        // Tired/Low energy
+        if (containsAny(lowerMessage, "tired", "exhausted", "no energy", "drained", "sleepy", "low energy", "fatigued")) {
+            return tiredResponse(name, todaysLog, tone);
+        }
+
+        // Motivated/Ready
+        if (containsAny(lowerMessage, "ready", "crush", "let's go", "pumped", "motivated", "fired up", "excited")) {
+            return motivatedResponse(name, streak, tone);
+        }
+
+        // Need motivation
+        if (containsAny(lowerMessage, "motivation", "motivate", "inspire", "struggling", "can't", "help", "stuck")) {
+            return motivationBoostResponse(name, behavior, tone);
+        }
+
+        // Workout recommendation
+        if (containsAny(lowerMessage, "workout", "what should", "recommend", "suggestion", "exercise", "train")) {
+            return workoutRecommendationResponse(name, todaysLog, behavior, tone);
+        }
+
+        // Streak/Progress questions
+        if (containsAny(lowerMessage, "streak", "progress", "how am i", "stats", "doing", "bricks")) {
+            return progressResponse(name, behavior, tone);
+        }
+
+        // Stress
+        if (containsAny(lowerMessage, "stressed", "stress", "anxious", "overwhelmed", "pressure")) {
+            return stressResponse(name, todaysLog, tone);
+        }
+
+        // Feeling bad/down
+        if (containsAny(lowerMessage, "bad", "down", "sad", "not great", "rough", "hard day", "difficult")) {
+            return empathyResponse(name, behavior, tone);
         }
 
         // Default response
@@ -159,7 +397,6 @@ public class BrixService {
 
     private String motivationBoostResponse(String name, BehaviorProfile behavior, BrixMessage.Tone tone) {
         int totalBricks = behavior != null ? behavior.getTotalBricksLaid() : 0;
-        int longestStreak = behavior != null ? behavior.getLongestStreak() : 0;
 
         if (totalBricks > 0) {
             return String.format("Listen %s, here's some truth: You've already laid %d bricks. 🧱 That's %d times you showed up when you could've stayed on the couch. You've proven you can do this. One more brick today - that's all. Not perfect, just present.", name, totalBricks, totalBricks);
@@ -203,6 +440,14 @@ public class BrixService {
         return String.format("I see you, %s. Stress is real, and I'm glad you're here. 💙 Exercise is actually one of the best stress relievers - but only if it feels right. How about a 15-minute 'Stress Relief Stretch' or a simple walk? No pressure, just presence. You've got this.", name);
     }
 
+    private String empathyResponse(String name, BehaviorProfile behavior, BrixMessage.Tone tone) {
+        int totalBricks = behavior != null ? behavior.getTotalBricksLaid() : 0;
+        if (totalBricks > 0) {
+            return String.format("I'm sorry you're not feeling great, %s. 💙 But here's what I know - you've already built %d bricks in your wall. One tough day doesn't tear that down. Rest if you need to. The wall will be here tomorrow, and so will I.", name, totalBricks);
+        }
+        return String.format("I hear you, %s. Some days are just hard, and that's okay. 💙 You don't have to crush a workout today. Just showing up here and checking in? That counts. How about we start small - even a 5-minute stretch or walk outside?", name);
+    }
+
     private String defaultResponse(String name, BrixMessage.Tone tone) {
         List<String> responses = Arrays.asList(
             String.format("I love that you're here, %s! 🧱 Every interaction is another brick in your foundation. What else can I help you with? Ask about workouts, motivation, or your progress!", name),
@@ -216,9 +461,6 @@ public class BrixService {
     // WORKOUT RECOMMENDATION
     // ========================================================================
 
-    /**
-     * Get personalized workout recommendation
-     */
     public WorkoutRecommendation getWorkoutRecommendation(Long profileId) {
         logger.info("Getting workout recommendation for user {}", profileId);
 
@@ -231,13 +473,11 @@ public class BrixService {
         BehaviorProfile behavior = behaviorProfileRepository.findByUserProfile(user)
                 .orElse(null);
 
-        // Get all workouts
         List<Workout> allWorkouts = workoutRepository.findAll();
         if (allWorkouts.isEmpty()) {
             return null;
         }
 
-        // Score and rank workouts
         Workout recommended = scoreAndSelectWorkout(allWorkouts, user, todaysLog, behavior);
         String reason = generateRecommendationReason(recommended, todaysLog, behavior);
 
@@ -256,39 +496,33 @@ public class BrixService {
         Map<Workout, Integer> scores = new HashMap<>();
 
         for (Workout workout : workouts) {
-            int score = 50; // Base score
+            int score = 50;
 
-            // Match difficulty to fitness level
             if (workout.getDifficultyLevel().name().equals(user.getFitnessLevel().name())) {
                 score += 20;
             }
 
-            // Adjust based on today's energy
             if (todaysLog != null) {
                 int energy = todaysLog.getEnergyLevel();
                 int stress = todaysLog.getStressLevel();
 
-                // Low energy - prefer easier/shorter workouts
                 if (energy <= 2) {
                     if (workout.getDifficultyLevel() == Workout.DifficultyLevel.BEGINNER) score += 30;
                     if (workout.getEstimatedDuration() <= 20) score += 20;
                     if (workout.getWorkoutType() == Workout.WorkoutType.FLEXIBILITY) score += 25;
                 }
 
-                // High energy - can handle harder workouts
                 if (energy >= 4) {
                     if (workout.getDifficultyLevel() == Workout.DifficultyLevel.ADVANCED) score += 15;
                     if (workout.getWorkoutType() == Workout.WorkoutType.STRENGTH) score += 10;
                 }
 
-                // High stress - prefer calming workouts
                 if (stress >= 4) {
                     if (workout.getWorkoutType() == Workout.WorkoutType.FLEXIBILITY) score += 30;
                     if (workout.getEstimatedDuration() <= 25) score += 15;
                 }
             }
 
-            // Match primary goal
             if (user.getPrimaryGoal() != null) {
                 String goal = user.getPrimaryGoal().name();
                 if (goal.equals("STRENGTH") && workout.getWorkoutType() == Workout.WorkoutType.STRENGTH) {
@@ -303,7 +537,6 @@ public class BrixService {
             scores.put(workout, score);
         }
 
-        // Return highest scoring workout
         return scores.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -329,11 +562,7 @@ public class BrixService {
     // TONE ADAPTATION
     // ========================================================================
 
-    /**
-     * Determine appropriate coaching tone based on user state
-     */
     private BrixMessage.Tone determineTone(BehaviorProfile behavior, DailyLog todaysLog) {
-        // Check today's mood/energy first
         if (todaysLog != null) {
             if (todaysLog.getMood() == DailyLog.Mood.STRESSED || 
                 todaysLog.getMood() == DailyLog.Mood.LOW) {
@@ -344,21 +573,17 @@ public class BrixService {
             }
         }
 
-        // Check behavior patterns
         if (behavior != null) {
-            // Celebrate milestones
             if (behavior.getConsecutiveDays() == 7 || 
                 behavior.getConsecutiveDays() == 30 ||
                 behavior.getConsecutiveDays() == behavior.getLongestStreak()) {
                 return BrixMessage.Tone.CELEBRATORY;
             }
 
-            // Struggling users need encouragement
             if (behavior.getMotivationState() == BehaviorProfile.MotivationState.STRUGGLING) {
                 return BrixMessage.Tone.EMPATHETIC;
             }
 
-            // Motivated users can be challenged
             if (behavior.getMotivationState() == BehaviorProfile.MotivationState.MOTIVATED &&
                 behavior.getMomentumTrend() == BehaviorProfile.MomentumTrend.RISING) {
                 return BrixMessage.Tone.CHALLENGING;
@@ -372,9 +597,6 @@ public class BrixService {
     // CONTEXT TRIGGERS
     // ========================================================================
 
-    /**
-     * Generate context-triggered message (called on app open, after workout, etc.)
-     */
     public BrixMessage generateContextMessage(Long profileId, String trigger) {
         logger.info("Generating context message for user {} with trigger: {}", profileId, trigger);
 
@@ -397,31 +619,26 @@ public class BrixService {
                 messageText = generateAppOpenMessage(name, behavior, todaysLog);
                 messageType = BrixMessage.MessageType.CHECK_IN;
                 break;
-
             case "workout_complete":
                 messageText = generateWorkoutCompleteMessage(name, behavior);
                 messageType = BrixMessage.MessageType.CELEBRATION;
                 tone = BrixMessage.Tone.CELEBRATORY;
                 break;
-
             case "streak_milestone":
                 messageText = generateStreakMilestoneMessage(name, behavior);
                 messageType = BrixMessage.MessageType.CELEBRATION;
                 tone = BrixMessage.Tone.CELEBRATORY;
                 break;
-
             case "missed_day":
                 messageText = generateMissedDayMessage(name, behavior);
                 messageType = BrixMessage.MessageType.MOTIVATION;
                 tone = BrixMessage.Tone.EMPATHETIC;
                 break;
-
             case "low_energy":
                 messageText = generateLowEnergyMessage(name, todaysLog);
                 messageType = BrixMessage.MessageType.TIP;
                 tone = BrixMessage.Tone.EMPATHETIC;
                 break;
-
             default:
                 messageText = String.format("Hey %s! Ready to build something great today? 🧱", name);
                 messageType = BrixMessage.MessageType.MOTIVATION;
@@ -471,9 +688,6 @@ public class BrixService {
     // GET RECENT MESSAGES
     // ========================================================================
 
-    /**
-     * Get recent BRIX messages for a user
-     */
     public List<BrixMessage> getRecentMessages(Long profileId, int limit) {
         UserProfile user = userProfileRepository.findById(profileId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + profileId));
