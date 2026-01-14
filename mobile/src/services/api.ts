@@ -4,6 +4,7 @@ import {
   UserProfileResponse,
   UserProfileUpdateRequest,
   WorkoutResponse,
+  WorkoutExerciseDTO,
   WorkoutSessionResponse,
   WorkoutSessionCreateRequest,
   WorkoutSessionCompleteRequest,
@@ -103,6 +104,11 @@ export const workoutApi = {
 
   getWorkoutById: async (workoutId: number): Promise<WorkoutResponse> => {
     const response = await api.get<WorkoutResponse>(`/workouts/${workoutId}`);
+    return response.data;
+  },
+
+  getWorkoutExercises: async (workoutId: number): Promise<WorkoutExerciseDTO[]> => {
+    const response = await api.get<WorkoutExerciseDTO[]>(`/workouts/${workoutId}/exercises`);
     return response.data;
   },
 

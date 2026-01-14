@@ -292,7 +292,7 @@ export default function HomeScreen() {
         {/* Daily Check-In */}
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
           <TouchableOpacity
-            onPress={() => console.log('Daily Log')}
+            onPress={() => navigation.navigate('DailyLog' as never)}
             activeOpacity={0.9}
           >
             <View
