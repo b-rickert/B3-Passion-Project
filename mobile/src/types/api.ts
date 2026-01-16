@@ -271,3 +271,43 @@ export interface WorkoutExerciseDTO {
   restSeconds: number;
   notes: string | null;
 }
+
+// Exercise detail within a workout
+export interface ExerciseDetail {
+  exerciseId: number;
+  name: string;
+  description: string;
+  muscleGroup: string;
+  equipmentType: string;
+  videoUrl: string;
+  sets: number;
+  reps: number;
+  durationSeconds: number;
+  restSeconds: number;
+  orderIndex: number;
+}
+
+// Extended WorkoutResponse with exercises
+export interface WorkoutDetailResponse extends WorkoutResponse {
+  exercises: ExerciseDetail[];
+}
+
+// Exercise detail within a workout
+export interface ExerciseDetail {
+  exerciseId: number;
+  name: string;
+  description: string;
+  muscleGroup: string;
+  equipmentType: string;
+  videoUrl: string;
+  sets: number;
+  reps: number;
+  durationSeconds: number;
+  restSeconds: number;
+  orderIndex: number;
+}
+
+// Extended WorkoutResponse with exercises
+export interface WorkoutDetailResponse extends WorkoutResponse {
+  exercises: ExerciseDetail[];
+}
