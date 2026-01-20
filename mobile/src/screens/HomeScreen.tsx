@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Flame, Zap, Trophy, ChevronRight, Play, Target, MessageCircle, Sparkles } from 'lucide-react-native';
+import { Flame, Snowflake, Zap, Trophy, ChevronRight, Play, Target, MessageCircle, Sparkles, TrendingUp, Clock } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
-import { profileApi, brickApi } from '../services/api';
-import { UserProfileResponse, BrickStatsResponse } from '../types/api';
+import { profileApi, brickApi, workoutApi, dailyLogApi } from '../services/api';
+import { UserProfileResponse, BrickStatsResponse, WorkoutResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -14,14 +14,26 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [brickStats, setBrickStats] = useState<BrickStatsResponse | null>(null);
+  const [recommendedWorkout, setRecommendedWorkout] = useState<WorkoutResponse | null>(null);
+  const [hasLoggedToday, setHasLoggedToday] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
     try {
-      const [profileData, statsData] = await Promise.all([profileApi.getProfile(), brickApi.getBrickStats()]);
+      const [profileData, statsData, workouts, logCheck] = await Promise.all([
+        profileApi.getProfile(),
+        brickApi.getBrickStats(),
+        workoutApi.getAllWorkouts(),
+        dailyLogApi.hasLoggedToday().catch(() => ({ hasLoggedToday: false })),
+      ]);
       setProfile(profileData);
       setBrickStats(statsData);
+      setHasLoggedToday(logCheck.hasLoggedToday);
+      // Pick a recommended workout (first one for now, could be smarter based on profile)
+      if (workouts.length > 0) {
+        setRecommendedWorkout(workouts[0]);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -45,9 +57,18 @@ export default function HomeScreen() {
 
   const getStreakLabel = () => {
     if (streak >= 7) return 'ON FIRE';
+    if (streak >= 5) return 'BLAZING';
     if (streak >= 3) return 'HEATING UP';
-    return 'CURRENT STREAK';
+    if (streak >= 1) return 'WARMING UP';
+    return 'GET STARTED';
   };
+
+  const getStreakIcon = () => {
+    if (streak >= 3) return Flame;
+    return Snowflake;
+  };
+
+  const StreakIcon = getStreakIcon();
 
   if (loading) {
     return (
@@ -82,32 +103,52 @@ export default function HomeScreen() {
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           <TouchableOpacity activeOpacity={0.95} onPress={() => navigation.navigate('Progress' as never)}>
             <View style={{ borderRadius: radius['2xl'], overflow: 'hidden', ...shadows.glow }}>
-              <LinearGradient colors={getStreakGradient()} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: spacing['2xl'] }}>
-                <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%', backgroundColor: 'rgba(255,255,255,0.1)', borderTopLeftRadius: 100, borderBottomLeftRadius: 200 }} />
-                
+              <LinearGradient colors={getStreakGradient()} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: spacing['2xl'], position: 'relative' }}>
+                {/* Decorative background shape */}
+                <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%', backgroundColor: 'rgba(255,255,255,0.08)', borderTopLeftRadius: 100, borderBottomLeftRadius: 200 }} />
+
+                {/* Large background icon */}
+                <View style={{ position: 'absolute', right: -20, top: -20, opacity: 0.15 }}>
+                  <StreakIcon size={180} color="#fff" />
+                </View>
+
                 <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                  <View>
+                  <View style={{ zIndex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Flame size={20} color="rgba(255,255,255,0.9)" />
-                      <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 3, marginLeft: spacing.sm, textTransform: 'uppercase' }}>{getStreakLabel()}</Text>
+                      <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 6, borderRadius: radius.md }}>
+                        <StreakIcon size={18} color="#fff" />
+                      </View>
+                      <Text style={{ color: 'rgba(255,255,255,0.95)', fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 3, marginLeft: spacing.sm, textTransform: 'uppercase' }}>{getStreakLabel()}</Text>
                     </View>
-                    <Text style={{ color: '#fff', fontSize: typography.sizes['5xl'], fontWeight: typography.weights.black, letterSpacing: -4, lineHeight: typography.sizes['5xl'], marginTop: spacing.sm }}>{streak}</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: typography.sizes.xl, fontWeight: typography.weights.semibold, marginTop: -spacing.xs }}>days</Text>
+                    <Text style={{ color: '#fff', fontSize: typography.sizes['5xl'], fontWeight: typography.weights.black, letterSpacing: -4, lineHeight: typography.sizes['5xl'], marginTop: spacing.md }}>{streak}</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold, marginTop: -spacing.xs }}>day streak</Text>
                   </View>
-                  
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <View style={{ backgroundColor: 'rgba(0,0,0,0.25)', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.full }}>
+
+                  <View style={{ alignItems: 'flex-end', zIndex: 1 }}>
+                    <View style={{ backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radius.full, flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.orange.light, marginRight: spacing.sm }} />
                       <Text style={{ color: '#fff', fontSize: typography.sizes.sm, fontWeight: typography.weights.bold }}>{brickStats?.totalBricks || 0} bricks</Text>
                     </View>
-                    <ChevronRight size={28} color="rgba(255,255,255,0.5)" style={{ marginTop: spacing.lg }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.md }}>
+                      <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: typography.sizes.xs, marginRight: spacing.xs }}>View Progress</Text>
+                      <ChevronRight size={16} color="rgba(255,255,255,0.7)" />
+                    </View>
                   </View>
                 </View>
 
-                <View style={{ flexDirection: 'row', marginTop: spacing.xl, gap: 8 }}>
+                {/* Weekly progress bar */}
+                <View style={{ flexDirection: 'row', marginTop: spacing.xl, gap: 6, backgroundColor: 'rgba(0,0,0,0.2)', padding: spacing.md, borderRadius: radius.lg }}>
                   {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
                     <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-                      <View style={{ width: '100%', height: 6, borderRadius: 3, backgroundColor: i < streak ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.25)', marginBottom: spacing.xs }} />
-                      <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: typography.sizes.xs, fontWeight: typography.weights.medium }}>{day}</Text>
+                      <View style={{
+                        width: '100%',
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: i < (streak % 7 || (streak > 0 ? 7 : 0)) ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.15)',
+                        marginBottom: spacing.xs,
+                        ...(i < (streak % 7 || (streak > 0 ? 7 : 0)) ? { shadowColor: '#fff', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 4 } : {})
+                      }} />
+                      <Text style={{ color: i < (streak % 7 || (streak > 0 ? 7 : 0)) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)', fontSize: typography.sizes.xs, fontWeight: typography.weights.semibold }}>{day}</Text>
                     </View>
                   ))}
                 </View>
@@ -124,90 +165,169 @@ export default function HomeScreen() {
           >
             <View
               style={{
-                backgroundColor: colors.background.tertiary,
+                backgroundColor: hasLoggedToday ? colors.success.muted : colors.background.card,
                 borderRadius: radius.xl,
                 padding: spacing.lg,
                 flexDirection: 'row',
                 alignItems: 'center',
-                borderWidth: 2,
-                borderColor: colors.orange.DEFAULT,
+                borderWidth: 1,
+                borderColor: hasLoggedToday ? colors.success.DEFAULT + '40' : colors.background.glassBorder,
+                ...shadows.card,
               }}
             >
               <View
                 style={{
-                  backgroundColor: colors.orange.DEFAULT + '20',
-                  width: 48,
-                  height: 48,
+                  backgroundColor: hasLoggedToday ? colors.success.DEFAULT + '30' : colors.orange.DEFAULT + '20',
+                  width: 52,
+                  height: 52,
                   borderRadius: radius.lg,
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginRight: spacing.lg,
                 }}
               >
-                <Target size={24} color={colors.orange.DEFAULT} />
+                {hasLoggedToday ? (
+                  <Trophy size={26} color={colors.success.DEFAULT} />
+                ) : (
+                  <Target size={26} color={colors.orange.DEFAULT} />
+                )}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold }}>Daily Check-In</Text>
-                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm }}>Log how you're feeling today</Text>
+                <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.bold }}>
+                  {hasLoggedToday ? 'Check-In Complete' : 'Daily Check-In'}
+                </Text>
+                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, marginTop: 2 }}>
+                  {hasLoggedToday ? 'Great job tracking your progress!' : 'Log how you\'re feeling today'}
+                </Text>
               </View>
-              <ChevronRight size={20} color={colors.text.muted} />
+              <View style={{ backgroundColor: hasLoggedToday ? colors.success.DEFAULT + '20' : colors.orange.DEFAULT + '15', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.full }}>
+                <ChevronRight size={18} color={hasLoggedToday ? colors.success.DEFAULT : colors.orange.DEFAULT} />
+              </View>
             </View>
           </TouchableOpacity>
         </View>
 
         {/* TODAY'S WORKOUT */}
-        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['3xl'] }}>
+        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg }}>
             <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>Ready to build</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Workouts' as never)}>
+            <TouchableOpacity onPress={() => navigation.navigate('Workouts' as never)} style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.sm, fontWeight: typography.weights.semibold }}>View all</Text>
+              <ChevronRight size={16} color={colors.orange.DEFAULT} />
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity activeOpacity={0.95} onPress={() => navigation.navigate('Workouts' as never)}>
-            <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], overflow: 'hidden', borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.float }}>
-              <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 3 }} />
-              
-              <View style={{ padding: spacing.xl }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <LinearGradient colors={gradients.fire} style={{ width: 56, height: 56, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg }}>
-                    <Sparkles size={28} color="#fff" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 2 }}>RECOMMENDED</Text>
-                    <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold, marginTop: 4 }}>Upper Body Blast</Text>
-                    <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm, marginTop: 4 }}>45 min - Intermediate - Dumbbells</Text>
+
+          {recommendedWorkout ? (
+            <TouchableOpacity
+              activeOpacity={0.95}
+              onPress={() => navigation.navigate('WorkoutDetail' as never, { workoutId: recommendedWorkout.workoutId } as never)}
+            >
+              <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], overflow: 'hidden', borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.float }}>
+                <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 4 }} />
+
+                <View style={{ padding: spacing.xl }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <LinearGradient colors={gradients.fire} style={{ width: 60, height: 60, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg, ...shadows.glow }}>
+                      <Sparkles size={30} color="#fff" />
+                    </LinearGradient>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <View style={{ backgroundColor: colors.orange.DEFAULT + '20', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm }}>
+                          <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 1 }}>RECOMMENDED</Text>
+                        </View>
+                      </View>
+                      <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>{recommendedWorkout.name}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs, gap: spacing.md }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Clock size={14} color={colors.text.muted} />
+                          <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm, marginLeft: 4 }}>{recommendedWorkout.estimatedDuration} min</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <TrendingUp size={14} color={colors.text.muted} />
+                          <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm, marginLeft: 4 }}>
+                            {recommendedWorkout.difficultyLevel.charAt(0) + recommendedWorkout.difficultyLevel.slice(1).toLowerCase()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
                   </View>
+
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    style={{ marginTop: spacing.xl }}
+                    onPress={() => navigation.navigate('WorkoutDetail' as never, { workoutId: recommendedWorkout.workoutId } as never)}
+                  >
+                    <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius: radius.lg, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...shadows.glow }}>
+                      <Play size={22} color="#fff" fill="#fff" />
+                      <Text style={{ color: '#fff', fontSize: typography.sizes.base, fontWeight: typography.weights.bold, marginLeft: spacing.sm }}>Start Workout</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
                 </View>
-                
-                <TouchableOpacity activeOpacity={0.9} style={{ marginTop: spacing.xl }}>
-                  <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius: radius.lg, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...shadows.glow }}>
-                    <Play size={20} color="#fff" fill="#fff" />
-                    <Text style={{ color: '#fff', fontSize: typography.sizes.base, fontWeight: typography.weights.bold, marginLeft: spacing.sm }}>Start Workout</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
               </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.95} onPress={() => navigation.navigate('Workouts' as never)}>
+              <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], padding: spacing['2xl'], alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
+                <Sparkles size={40} color={colors.text.muted} />
+                <Text style={{ color: colors.text.primary, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold, marginTop: spacing.md }}>Find a Workout</Text>
+                <Text style={{ color: colors.text.secondary, textAlign: 'center', marginTop: spacing.xs }}>Browse workouts to get started</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* BRIX AI */}
+        {/* Quick Stats */}
+        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            {[
+              { icon: Zap, value: brickStats?.bricksThisWeek || 0, label: 'This Week', color: colors.orange.DEFAULT },
+              { icon: Trophy, value: brickStats?.longestStreak || 0, label: 'Best Streak', color: colors.amber.DEFAULT },
+              { icon: Target, value: profile?.weeklyGoalDays || 0, label: 'Weekly Goal', color: colors.blue.DEFAULT },
+            ].map((stat, i) => (
+              <View key={i} style={{ flex: 1, backgroundColor: colors.background.card, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.card }}>
+                <View style={{ backgroundColor: stat.color + '15', width: 38, height: 38, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <stat.icon size={18} color={stat.color} />
+                </View>
+                <Text style={{ color: colors.text.primary, fontSize: typography.sizes['2xl'], fontWeight: typography.weights.black }}>{stat.value}</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: 2 }}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* BRIX AI Coach */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           <TouchableOpacity activeOpacity={0.95} onPress={() => navigation.navigate('Brix' as never)}>
-            <LinearGradient colors={['rgba(249, 115, 22, 0.2)', 'rgba(249, 115, 22, 0.1)']} style={{ borderRadius: radius['2xl'], padding: spacing.xl, borderWidth: 1, borderColor: 'rgba(249, 115, 22, 0.3)' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <LinearGradient colors={gradients.fire} style={{ width: 52, height: 52, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg, ...shadows.glow }}>
-                  <MessageCircle size={26} color="#fff" />
-                </LinearGradient>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: colors.orange.neon, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 2 }}>BRIX AI COACH</Text>
-                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, marginTop: 4 }}>
-                    {streak > 0 ? "You're making progress! Let's keep the momentum." : "Ready to lay your foundation?"}
-                  </Text>
+            <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], overflow: 'hidden', borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.card }}>
+              <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 3 }} />
+              <View style={{ padding: spacing.xl }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ position: 'relative' }}>
+                    <LinearGradient colors={gradients.fire} style={{ width: 56, height: 56, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', ...shadows.glow }}>
+                      <MessageCircle size={28} color="#fff" />
+                    </LinearGradient>
+                    <View style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: colors.success.DEFAULT, borderRadius: 8, borderWidth: 2, borderColor: colors.background.card }} />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.lg }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                      <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, letterSpacing: 1.5 }}>BRIX AI COACH</Text>
+                      <View style={{ backgroundColor: colors.success.DEFAULT + '30', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm, marginLeft: spacing.sm }}>
+                        <Text style={{ color: colors.success.DEFAULT, fontSize: 9, fontWeight: typography.weights.bold }}>ONLINE</Text>
+                      </View>
+                    </View>
+                    <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, lineHeight: 20 }}>
+                      {streak >= 7 ? "You're on fire! Let's push even harder today." :
+                       streak >= 3 ? "Great momentum! Ready to keep building?" :
+                       streak > 0 ? "You're making progress! Let's keep it going." :
+                       "Ready to lay your first brick today?"}
+                    </Text>
+                  </View>
+                  <View style={{ backgroundColor: colors.orange.DEFAULT + '15', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.full }}>
+                    <ChevronRight size={18} color={colors.orange.DEFAULT} />
+                  </View>
                 </View>
-                <ChevronRight size={22} color={colors.orange.DEFAULT} />
               </View>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>

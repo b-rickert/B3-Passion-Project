@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-B3 (Brick by Brick) is a mobile fitness application with an adaptive AI behavior coach called BRIX. The app uses a "brick" metaphor where each completed workout is a brick in the user's fitness foundation.
+B3 (Brick by Brick) is a mobile fitness application with an adaptive AI behavior coach called BRIX. The app uses a "brick" metaphor where each completed workout is a brick in the user's fitness foundation. The core differentiator is **behavioral transformation** through adaptive coaching, not just workout content.
 
 ## Tech Stack
 
@@ -63,7 +63,7 @@ Mobile App (React Native) → REST API (localhost:8080) → Spring Boot Services
 
 ### Key Domain Concepts
 
-**Brick System**: Completed workouts create "bricks" that build a visual wall. Bricks have types (WORKOUT, STREAK_BONUS, MILESTONE) tracked in the `brick` table. The `BrickService` creates bricks when sessions complete.
+**Brick System**: Completed workouts create "bricks" that build a visual wall. Bricks have types (WORKOUT, STREAK_BONUS, MILESTONE) tracked in the `brick` table. The `BrickService` creates bricks when sessions complete. Missing days are framed as gaps to repair, not failures.
 
 **BehaviorProfile**: BRIX's adaptive intelligence engine. Tracks:
 - Streak data (consecutiveDays, longestStreak)
@@ -73,6 +73,12 @@ Mobile App (React Native) → REST API (localhost:8080) → Spring Boot Services
 - Energy and fatigue scores
 
 The `logWorkout()` method in BehaviorProfile automatically updates streaks, consistency, motivation, momentum, and adjusts the coaching tone.
+
+**BRIX Coaching Tones** (determined by behavioral rules):
+- **Supportive/Encouraging**: Low energy, returning users, gentle encouragement
+- **Challenging**: High consistency streaks, performance improvement opportunities
+- **Empathetic**: After long breaks, low motivation periods
+- **Celebratory**: Milestone achievements, streak completions
 
 **Single User Design**: This MVP uses a single demo user (profileId=1) created by DataInitializer. No authentication is implemented. The frontend API client defaults to `DEFAULT_PROFILE_ID = 1`.
 
@@ -86,6 +92,7 @@ Backend serves at `http://localhost:8080/api/v1`:
 - `/daily-logs`, `/daily-logs/today/{profileId}` - Energy/mood/stress logging
 - `/milestones/{profileId}`, `/milestones/{profileId}/check` - Achievement tracking
 - `/behavior`, `/behavior/{profileId}` - BRIX behavior profile
+- `/brix/chat`, `/brix/recommendation` - BRIX AI interactions
 
 ## Database
 
@@ -105,4 +112,4 @@ Backend tests are in `backend/src/test/java/com/b3/`:
 ## External APIs
 
 - **ExerciseDB API**: For fetching exercise data (see `ExerciseApiService.java`, configured in application.properties)
-- **Claude API**: BRIX AI responses via `ClaudeService.java` (requires API key in environment)
+- **Claude API**: BRIX AI responses via `ClaudeService.java` (requires `ANTHROPIC_API_KEY` environment variable)

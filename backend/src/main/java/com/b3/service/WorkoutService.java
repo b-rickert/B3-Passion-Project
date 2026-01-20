@@ -4,6 +4,7 @@ import com.b3.dto.WorkoutExerciseDTO;
 import com.b3.dto.response.WorkoutResponse;
 import com.b3.exception.ResourceNotFoundException;
 import com.b3.model.Workout;
+import com.b3.model.WorkoutExercise;
 import com.b3.repository.WorkoutRepository;
 import com.b3.repository.WorkoutExerciseRepository;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutExerciseRepository workoutExerciseRepository;
     
-    public WorkoutService(WorkoutRepository workoutRepository) {
+    public WorkoutService(WorkoutRepository workoutRepository, WorkoutExerciseRepository workoutExerciseRepository) {
         this.workoutRepository = workoutRepository;
         this.workoutExerciseRepository = workoutExerciseRepository;
     }
@@ -116,5 +117,25 @@ public class WorkoutService {
         response.setEstimatedDuration(workout.getEstimatedDuration());
         response.setRequiredEquipment(workout.getRequiredEquipment());
         return response;
+    }
+
+    /**
+     * Map WorkoutExercise entity to WorkoutExerciseDTO
+     */
+    private WorkoutExerciseDTO mapToExerciseDTO(WorkoutExercise we) {
+        WorkoutExerciseDTO dto = new WorkoutExerciseDTO();
+        dto.setExerciseId(we.getExercise().getExerciseId());
+        dto.setName(we.getExercise().getName());
+        dto.setDescription(we.getExercise().getDescription());
+        dto.setMuscleGroup(we.getExercise().getMuscleGroup() != null ? we.getExercise().getMuscleGroup().name() : null);
+        dto.setEquipmentType(we.getExercise().getEquipmentType() != null ? we.getExercise().getEquipmentType().name() : null);
+        dto.setVideoUrl(we.getExercise().getVideoUrl());
+        dto.setOrderIndex(we.getOrderIndex());
+        dto.setSets(we.getSets());
+        dto.setReps(we.getReps());
+        dto.setDurationSeconds(we.getDurationSeconds());
+        dto.setRestSeconds(we.getRestSeconds());
+        dto.setNotes(we.getNotes());
+        return dto;
     }
 }

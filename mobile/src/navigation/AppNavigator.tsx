@@ -1,18 +1,22 @@
 import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Home, Dumbbell, Calendar, MessageCircle, User } from 'lucide-react-native';
 import { colors, gradients, radius } from '../constants/theme';
 import HomeScreen from '../screens/HomeScreen';
 import WorkoutsScreen from '../screens/WorkoutsScreen';
+import WorkoutDetailScreen from '../screens/WorkoutDetailScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import BrixScreen from '../screens/BrixScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import DailyLogScreen from '../screens/DailyLogScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
-export default function AppNavigator() {
+function TabNavigator() {
   return (
     <Tab.Navigator
       id="MainTabs"
@@ -103,5 +107,15 @@ export default function AppNavigator() {
       <Tab.Screen name="Brix" component={BrixScreen} options={{ tabBarLabel: 'BRIX' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
+      <Stack.Screen name="DailyLog" component={DailyLogScreen} />
+    </Stack.Navigator>
   );
 }

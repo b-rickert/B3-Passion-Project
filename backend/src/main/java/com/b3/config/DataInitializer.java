@@ -36,7 +36,7 @@ public class DataInitializer {
                 logger.info(" Initializing demo data...");
                 
                 UserProfile user = new UserProfile();
-                user.setDisplayName("Demo User");
+                user.setDisplayName("Marcus Johnson");
                 user.setAge(28);
                 user.setFitnessLevel(UserProfile.FitnessLevel.INTERMEDIATE);
                 user.setPrimaryGoal(UserProfile.PrimaryGoal.STRENGTH);

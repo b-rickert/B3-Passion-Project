@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronLeft, ChevronRight, Trophy, Flame, Target, Award } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Trophy, Flame, Snowflake, Target, Award, TrendingUp, Zap } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
 import { brickApi, milestoneApi } from '../services/api';
 import { BrickResponse, BrickStatsResponse, MilestoneDTO } from '../types/api';
@@ -67,6 +67,55 @@ export default function ProgressScreen() {
     return date > today;
   };
 
+  // Heat map color calculation - returns color based on streak intensity
+  const getHeatMapColor = (day: number): string => {
+    const brick = getBrickForDate(day);
+    if (!brick) return colors.background.glass;
+
+    // Calculate consecutive days leading up to this day
+    let consecutiveDays = 1;
+    let checkDay = day - 1;
+
+    while (checkDay >= 1) {
+      const prevBrick = getBrickForDate(checkDay);
+      if (prevBrick) {
+        consecutiveDays++;
+        checkDay--;
+      } else {
+        break;
+      }
+    }
+
+    // Color scale from ice cold (blue) to fire hot (orange/red)
+    if (consecutiveDays >= 7) return '#ef4444'; // Fire red - 7+ days
+    if (consecutiveDays >= 5) return '#f97316'; // Orange - 5-6 days
+    if (consecutiveDays >= 3) return '#f59e0b'; // Amber - 3-4 days
+    if (consecutiveDays >= 2) return '#60a5fa'; // Light blue - 2 days
+    return '#3b82f6'; // Blue - 1 day (cold start)
+  };
+
+  const getHeatMapGlow = (day: number) => {
+    const brick = getBrickForDate(day);
+    if (!brick) return {};
+
+    let consecutiveDays = 1;
+    let checkDay = day - 1;
+    while (checkDay >= 1 && getBrickForDate(checkDay)) {
+      consecutiveDays++;
+      checkDay--;
+    }
+
+    if (consecutiveDays >= 5) {
+      return {
+        shadowColor: '#f97316',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 6,
+      };
+    }
+    return {};
+  };
+
   const changeMonth = (delta: number) => {
     const newDate = new Date(currentMonth);
     newDate.setMonth(newDate.getMonth() + delta);
@@ -108,15 +157,15 @@ export default function ProgressScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             {[
               { icon: Target, value: brickStats?.totalBricks || 0, label: 'Total Bricks', color: colors.orange.DEFAULT },
-              { icon: Flame, value: brickStats?.currentStreak || 0, label: 'Streak', color: colors.orange.DEFAULT },
-              { icon: Trophy, value: brickStats?.bricksThisMonth || 0, label: 'This Month', color: colors.orange.DEFAULT },
+              { icon: (brickStats?.currentStreak || 0) >= 3 ? Flame : Snowflake, value: brickStats?.currentStreak || 0, label: 'Streak', color: (brickStats?.currentStreak || 0) >= 3 ? colors.orange.DEFAULT : colors.blue.DEFAULT },
+              { icon: Trophy, value: brickStats?.longestStreak || 0, label: 'Best Streak', color: colors.amber.DEFAULT },
             ].map((stat, i) => (
-              <View key={i} style={{ flex: 1, backgroundColor: colors.background.glass, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.background.glassBorder }}>
-                <View style={{ backgroundColor: stat.color + '20', width: 36, height: 36, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
-                  <stat.icon size={18} color={stat.color} />
+              <View key={i} style={{ flex: 1, backgroundColor: colors.background.glass, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.card }}>
+                <View style={{ backgroundColor: stat.color + '20', width: 40, height: 40, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <stat.icon size={20} color={stat.color} />
                 </View>
                 <Text style={{ color: colors.text.primary, fontSize: typography.sizes['2xl'], fontWeight: typography.weights.black }}>{stat.value}</Text>
-                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>{stat.label}</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: 2 }}>{stat.label}</Text>
               </View>
             ))}
           </View>
@@ -153,21 +202,24 @@ export default function ProgressScreen() {
                 const brick = day ? getBrickForDate(day) : null;
                 const today = day ? isToday(day) : false;
                 const future = day ? isFutureDate(day) : false;
+                const heatColor = day ? getHeatMapColor(day) : colors.background.glass;
+                const glowStyle = day ? getHeatMapGlow(day) : {};
 
                 return (
                   <View key={index} style={{ width: '14.28%', aspectRatio: 1, padding: 2 }}>
                     {day !== null && (
                       <View style={{
                         flex: 1,
-                        backgroundColor: brick ? colors.orange.DEFAULT : future ? 'transparent' : colors.background.glass,
+                        backgroundColor: brick ? heatColor : future ? 'transparent' : colors.background.glass,
                         borderRadius: radius.sm,
                         justifyContent: 'center',
                         alignItems: 'center',
-                        borderWidth: today ? 2 : 0,
-                        borderColor: today ? colors.blue.DEFAULT : 'transparent',
+                        borderWidth: today ? 2 : brick ? 0 : 1,
+                        borderColor: today ? '#fff' : brick ? 'transparent' : colors.background.glassBorder,
+                        ...glowStyle,
                       }}>
                         <Text style={{
-                          color: brick ? colors.text.primary : future ? colors.text.muted : colors.text.secondary,
+                          color: brick || today ? '#fff' : future ? colors.text.muted : colors.text.secondary,
                           fontSize: typography.sizes.xs,
                           fontWeight: brick || today ? typography.weights.bold : typography.weights.normal,
                         }}>
@@ -180,15 +232,23 @@ export default function ProgressScreen() {
               })}
             </View>
 
-            {/* Legend */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, marginTop: spacing.lg }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.orange.DEFAULT, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs }}>Workout</Text>
+            {/* Heat Map Legend */}
+            <View style={{ marginTop: spacing.xl, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.background.glassBorder }}>
+              <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, textAlign: 'center', marginBottom: spacing.sm, letterSpacing: 1 }}>STREAK INTENSITY</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.xs }}>
+                <Snowflake size={14} color={colors.blue.DEFAULT} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <View style={{ width: 20, height: 12, backgroundColor: '#3b82f6', borderRadius: 3 }} />
+                  <View style={{ width: 20, height: 12, backgroundColor: '#60a5fa', borderRadius: 3 }} />
+                  <View style={{ width: 20, height: 12, backgroundColor: '#f59e0b', borderRadius: 3 }} />
+                  <View style={{ width: 20, height: 12, backgroundColor: '#f97316', borderRadius: 3 }} />
+                  <View style={{ width: 20, height: 12, backgroundColor: '#ef4444', borderRadius: 3 }} />
+                </View>
+                <Flame size={14} color={colors.orange.DEFAULT} />
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.blue.DEFAULT, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs }}>Today</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: spacing.sm }}>
+                <Text style={{ color: colors.text.muted, fontSize: 9 }}>1 day</Text>
+                <Text style={{ color: colors.text.muted, fontSize: 9, marginLeft: spacing['3xl'] }}>7+ days</Text>
               </View>
             </View>
           </View>
