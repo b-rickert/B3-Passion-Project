@@ -116,20 +116,34 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* STATS */}
-        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
-          <View style={{ flexDirection: 'row', gap: spacing.md }}>
-            {[
-              { icon: Zap, value: brickStats?.bricksThisWeek || 0, label: 'This Week' },
-              { icon: Trophy, value: brickStats?.longestStreak || 0, label: 'Best Streak' },
-              { icon: Target, value: profile?.weeklyGoalDays || 0, label: 'Goal' },
-            ].map((stat, i) => (
-              <View key={i} style={{ flex: 1, backgroundColor: colors.background.glass, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.card }}>
-                <View style={{ backgroundColor: colors.orange.DEFAULT + '20', width: 36, height: 36, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.md }}>
-                  <stat.icon size={18} color={colors.orange.DEFAULT} />
-                </View>
-                <Text style={{ color: colors.text.primary, fontSize: typography.sizes['2xl'], fontWeight: typography.weights.black }}>{stat.value}</Text>
-                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: 2 }}>{stat.label}</Text>
+        {/* Daily Check-In */}
+        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('DailyLog' as never)}
+            activeOpacity={0.9}
+          >
+            <View
+              style={{
+                backgroundColor: colors.background.tertiary,
+                borderRadius: 20,
+                padding: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                ...orangeOutline,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.orange.DEFAULT + '20',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 16,
+                }}
+              >
+                <Ionicons name="clipboard-outline" size={24} color={colors.orange.DEFAULT} />
               </View>
             ))}
           </View>

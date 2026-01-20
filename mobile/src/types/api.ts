@@ -79,6 +79,22 @@ export interface WorkoutResponse {
   requiredEquipment: string | null;
 }
 
+// WorkoutExerciseDTO.java
+export interface WorkoutExerciseDTO {
+  exerciseId: number;
+  name: string;
+  description: string | null;
+  muscleGroup: string;
+  equipmentType: string;
+  videoUrl: string | null;
+  orderIndex: number;
+  sets: number;
+  reps: number | null;
+  durationSeconds: number | null;
+  restSeconds: number;
+  notes: string | null;
+}
+
 // WorkoutSessionResponse.java
 export interface WorkoutSessionResponse {
   sessionId: number;
@@ -270,44 +286,4 @@ export interface WorkoutExerciseDTO {
   durationSeconds: number | null;
   restSeconds: number;
   notes: string | null;
-}
-
-// Exercise detail within a workout
-export interface ExerciseDetail {
-  exerciseId: number;
-  name: string;
-  description: string;
-  muscleGroup: string;
-  equipmentType: string;
-  videoUrl: string;
-  sets: number;
-  reps: number;
-  durationSeconds: number;
-  restSeconds: number;
-  orderIndex: number;
-}
-
-// Extended WorkoutResponse with exercises
-export interface WorkoutDetailResponse extends WorkoutResponse {
-  exercises: ExerciseDetail[];
-}
-
-// Exercise detail within a workout
-export interface ExerciseDetail {
-  exerciseId: number;
-  name: string;
-  description: string;
-  muscleGroup: string;
-  equipmentType: string;
-  videoUrl: string;
-  sets: number;
-  reps: number;
-  durationSeconds: number;
-  restSeconds: number;
-  orderIndex: number;
-}
-
-// Extended WorkoutResponse with exercises
-export interface WorkoutDetailResponse extends WorkoutResponse {
-  exercises: ExerciseDetail[];
 }

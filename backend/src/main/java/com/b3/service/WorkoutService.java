@@ -1,10 +1,9 @@
 package com.b3.service;
 
+import com.b3.dto.WorkoutExerciseDTO;
 import com.b3.dto.response.WorkoutResponse;
 import com.b3.exception.ResourceNotFoundException;
 import com.b3.model.Workout;
-import com.b3.model.WorkoutExercise;
-import com.b3.model.Exercise;
 import com.b3.repository.WorkoutRepository;
 import com.b3.repository.WorkoutExerciseRepository;
 import org.slf4j.Logger;
@@ -16,9 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Service for Workout business logic
- */
 @Service
 @Transactional
 public class WorkoutService {
@@ -27,91 +23,90 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutExerciseRepository workoutExerciseRepository;
     
-    public WorkoutService(WorkoutRepository workoutRepository, WorkoutExerciseRepository workoutExerciseRepository) {
+    public WorkoutService(WorkoutRepository workoutRepository) {
         this.workoutRepository = workoutRepository;
         this.workoutExerciseRepository = workoutExerciseRepository;
     }
     
     /**
-     * Get all workouts (without exercises for list view)
+     * Get all workouts
      */
     public List<WorkoutResponse> getAllWorkouts() {
         log.info("Fetching all workouts");
         List<Workout> workouts = workoutRepository.findAll();
         log.info("Found {} workouts", workouts.size());
+        
         return workouts.stream()
-            .map(this::mapToResponseBasic)
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
     
     /**
-     * Get workout by ID (with exercises for detail view)
+     * Get workout by ID
      */
-    @Transactional(readOnly = true)
     public WorkoutResponse getWorkoutById(Long workoutId) {
         log.info("Fetching workout with ID: {}", workoutId);
         Workout workout = workoutRepository.findById(workoutId)
             .orElseThrow(() -> new ResourceNotFoundException("Workout", workoutId));
         
-        // Fetch exercises separately to avoid lazy loading issues
-        List<WorkoutExercise> exercises = workoutExerciseRepository.findByWorkout_WorkoutIdOrderByOrderIndexAsc(workoutId);
-        log.info("Found {} exercises for workout {}", exercises.size(), workoutId);
-        
-        return mapToResponseWithExercises(workout, exercises);
+        return mapToResponse(workout);
     }
     
-    /**
-     * Filter workouts by type
-     */
+    public List<WorkoutExerciseDTO> getWorkoutExercises(Long workoutId) {
+        log.info("Fetching exercises for workout ID: {}", workoutId);
+        if (!workoutRepository.existsById(workoutId)) {
+            throw new ResourceNotFoundException("Workout", workoutId);
+        }
+        List<WorkoutExercise> exercises = workoutExerciseRepository
+            .findByWorkout_WorkoutIdOrderByOrderIndexAsc(workoutId);
+        log.info("Found {} exercises for workout {}", exercises.size(), workoutId);
+        return exercises.stream().map(this::mapToExerciseDTO).collect(Collectors.toList());
+    }
+    
     public List<WorkoutResponse> getWorkoutsByType(Workout.WorkoutType type) {
         log.info("Fetching workouts by type: {}", type);
         List<Workout> workouts = workoutRepository.findByWorkoutType(type);
         log.info("Found {} {} workouts", workouts.size(), type);
+        
         return workouts.stream()
-            .map(this::mapToResponseBasic)
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
     
-    /**
-     * Filter workouts by difficulty
-     */
     public List<WorkoutResponse> getWorkoutsByDifficulty(Workout.DifficultyLevel difficulty) {
         log.info("Fetching workouts by difficulty: {}", difficulty);
         List<Workout> workouts = workoutRepository.findByDifficultyLevel(difficulty);
         log.info("Found {} {} workouts", workouts.size(), difficulty);
+        
         return workouts.stream()
-            .map(this::mapToResponseBasic)
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
     
-    /**
-     * Search workouts by name
-     */
     public List<WorkoutResponse> searchWorkouts(String keyword) {
         log.info("Searching workouts with keyword: {}", keyword);
         List<Workout> workouts = workoutRepository.findByNameContainingIgnoreCase(keyword);
         log.info("Found {} workouts matching '{}'", workouts.size(), keyword);
+        
         return workouts.stream()
-            .map(this::mapToResponseBasic)
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
     
-    /**
-     * Get recommended workouts based on fitness level
-     */
     public List<WorkoutResponse> getRecommendedWorkouts(Workout.DifficultyLevel fitnessLevel) {
         log.info("Getting recommended workouts for fitness level: {}", fitnessLevel);
         List<Workout> workouts = workoutRepository.findByDifficultyLevel(fitnessLevel);
         log.info("Recommended {} workouts", workouts.size());
+        
         return workouts.stream()
-            .map(this::mapToResponseBasic)
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
     
     /**
-     * Map Workout entity to basic WorkoutResponse (no exercises)
+     * Map Workout entity to WorkoutResponse DTO
      */
-    private WorkoutResponse mapToResponseBasic(Workout workout) {
+    private WorkoutResponse mapToResponse(Workout workout) {
         WorkoutResponse response = new WorkoutResponse();
         response.setWorkoutId(workout.getWorkoutId());
         response.setName(workout.getName());
@@ -121,44 +116,5 @@ public class WorkoutService {
         response.setEstimatedDuration(workout.getEstimatedDuration());
         response.setRequiredEquipment(workout.getRequiredEquipment());
         return response;
-    }
-    
-    /**
-     * Map Workout entity to full WorkoutResponse (with exercises)
-     */
-    private WorkoutResponse mapToResponseWithExercises(Workout workout, List<WorkoutExercise> workoutExercises) {
-        WorkoutResponse response = mapToResponseBasic(workout);
-        
-        // Map exercises (already sorted by repository query)
-        List<WorkoutResponse.ExerciseDetail> exerciseDetails = workoutExercises.stream()
-            .map(this::mapExerciseDetail)
-            .collect(Collectors.toList());
-        
-        response.setExercises(exerciseDetails);
-        log.info("Mapped {} exercises for workout {}", exerciseDetails.size(), workout.getName());
-        
-        return response;
-    }
-    
-    /**
-     * Map WorkoutExercise to ExerciseDetail
-     */
-    private WorkoutResponse.ExerciseDetail mapExerciseDetail(WorkoutExercise we) {
-        WorkoutResponse.ExerciseDetail detail = new WorkoutResponse.ExerciseDetail();
-        Exercise exercise = we.getExercise();
-        
-        detail.setExerciseId(exercise.getExerciseId());
-        detail.setName(exercise.getName());
-        detail.setDescription(exercise.getDescription());
-        detail.setMuscleGroup(exercise.getMuscleGroup().name());
-        detail.setEquipmentType(exercise.getEquipmentType().name());
-        detail.setVideoUrl(exercise.getVideoUrl());
-        detail.setSets(we.getSets());
-        detail.setReps(we.getReps());
-        detail.setDurationSeconds(we.getDurationSeconds());
-        detail.setRestSeconds(we.getRestSeconds());
-        detail.setOrderIndex(we.getOrderIndex());
-        
-        return detail;
     }
 }
