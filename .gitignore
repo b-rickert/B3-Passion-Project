@@ -23,3 +23,25 @@
 hs_err_pid*
 replay_pid*
 .DS_Store
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+mobile/.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build outputs
+backend/target/
+backend/logs/
+
+# Node
+node_modules/
+
+# Database
+*.db
