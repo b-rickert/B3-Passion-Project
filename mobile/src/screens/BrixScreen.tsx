@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingVi
 import { LinearGradient } from 'expo-linear-gradient';
 import { Send, MessageCircle } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
+import B3Logo from '../components/B3Logo';
 
 interface Message {
   id: string;
@@ -66,17 +67,20 @@ export default function BrixScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={0}>
         {/* Header */}
         <View style={{ paddingTop: 60, paddingBottom: spacing.lg, paddingHorizontal: spacing.xl, borderBottomWidth: 1, borderBottomColor: colors.background.glassBorder }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <LinearGradient colors={gradients.fire} style={{ width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg, ...shadows.glow }}>
-              <MessageCircle size={24} color="#fff" />
-            </LinearGradient>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>BRIX</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ backgroundColor: colors.green.DEFAULT, width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs }} />
-                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>Online - Adaptive Coach</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <LinearGradient colors={gradients.fire} style={{ width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg, ...shadows.glow }}>
+                <MessageCircle size={24} color="#fff" />
+              </LinearGradient>
+              <View>
+                <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>BRIX</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ backgroundColor: colors.green.DEFAULT, width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs }} />
+                  <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>Online - Adaptive Coach</Text>
+                </View>
               </View>
             </View>
+            <B3Logo size={44} />
           </View>
         </View>
 

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "babel-preset-expo": "^54.0.9",
+    "react-native-dotenv": "^3.4.11"
+  }
+}

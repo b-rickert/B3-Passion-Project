@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Trophy, Flame, Target, Award } from 'lucide-
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
 import { brickApi, milestoneApi } from '../services/api';
 import { BrickResponse, BrickStatsResponse, MilestoneDTO } from '../types/api';
+import B3Logo from '../components/B3Logo';
 
 export default function ProgressScreen() {
   const [brickStats, setBrickStats] = useState<BrickStatsResponse | null>(null);
@@ -77,7 +78,7 @@ export default function ProgressScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: colors.orange.DEFAULT, fontSize: 48, fontWeight: '900' }}>B3</Text>
+        <B3Logo size={80} />
       </View>
     );
   }
@@ -93,8 +94,13 @@ export default function ProgressScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />}>
         {/* Header */}
         <View style={{ paddingHorizontal: spacing.xl, paddingTop: 70 }}>
-          <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, letterSpacing: 2, textTransform: 'uppercase' }}>Your</Text>
-          <Text style={{ color: colors.text.primary, fontSize: typography.sizes['4xl'], fontWeight: typography.weights.black, letterSpacing: -1 }}>Foundation</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View>
+              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, letterSpacing: 2, textTransform: 'uppercase' }}>Your</Text>
+              <Text style={{ color: colors.text.primary, fontSize: typography.sizes['4xl'], fontWeight: typography.weights.black, letterSpacing: -1 }}>Foundation</Text>
+            </View>
+            <B3Logo size={48} />
+          </View>
         </View>
 
         {/* Stats Row */}
@@ -182,11 +188,7 @@ export default function ProgressScreen() {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
                 <View style={{ width: 12, height: 12, backgroundColor: colors.blue.DEFAULT, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs }}>Streak</Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                <View style={{ width: 12, height: 12, backgroundColor: colors.green.DEFAULT, borderRadius: 3 }} />
-                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs }}>Milestone</Text>
+                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs }}>Today</Text>
               </View>
             </View>
           </View>

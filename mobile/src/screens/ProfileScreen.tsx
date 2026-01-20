@@ -2,10 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Settings, HelpCircle, ChevronRight, Target, Flame, Trophy, Dumbbell, Calendar, Flag, Award, Zap, Star } from 'lucide-react-native';
+import { Settings, HelpCircle, ChevronRight, Target, Flame, Trophy, Dumbbell, Calendar, Flag, Zap, Star } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
 import { profileApi, brickApi, milestoneApi } from '../services/api';
 import { UserProfileResponse, BrickStatsResponse } from '../types/api';
+import B3Logo from '../components/B3Logo';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -51,7 +52,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: colors.orange.DEFAULT, fontSize: 48, fontWeight: '900' }}>B3</Text>
+        <B3Logo size={80} />
       </View>
     );
   }
@@ -66,21 +67,26 @@ export default function ProfileScreen() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />}>
         {/* Header with Avatar */}
-        <View style={{ paddingTop: 70, paddingHorizontal: spacing.xl, alignItems: 'center' }}>
-          {/* Settings Button */}
-          <TouchableOpacity onPress={() => console.log('Settings')} style={{ position: 'absolute', top: 60, right: spacing.xl }}>
-            <Settings size={24} color={colors.text.secondary} />
-          </TouchableOpacity>
+        <View style={{ paddingTop: 70, paddingHorizontal: spacing.xl }}>
+          {/* Top row with settings and logo */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl }}>
+            <TouchableOpacity onPress={() => console.log('Settings')}>
+              <Settings size={24} color={colors.text.secondary} />
+            </TouchableOpacity>
+            <B3Logo size={48} />
+          </View>
 
-          {/* Avatar */}
-          <LinearGradient colors={gradients.fire} style={{ width: 100, height: 100, borderRadius: 50, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.lg, ...shadows.glow }}>
-            <Text style={{ color: '#fff', fontSize: 44, fontWeight: typography.weights.black }}>{profile?.displayName?.charAt(0) || 'B'}</Text>
-          </LinearGradient>
+          {/* Avatar and name centered */}
+          <View style={{ alignItems: 'center' }}>
+            <LinearGradient colors={gradients.fire} style={{ width: 100, height: 100, borderRadius: 50, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.lg, ...shadows.glow }}>
+              <Text style={{ color: '#fff', fontSize: 44, fontWeight: typography.weights.black }}>{profile?.displayName?.charAt(0) || 'B'}</Text>
+            </LinearGradient>
 
-          <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>{profile?.displayName || 'Builder'}</Text>
-          <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.base, marginTop: spacing.xs }}>
-            {formatLevel(profile?.fitnessLevel || 'BEGINNER')} - {formatGoal(profile?.primaryGoal || 'STRENGTH')}
-          </Text>
+            <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>{profile?.displayName || 'Builder'}</Text>
+            <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.base, marginTop: spacing.xs }}>
+              {formatLevel(profile?.fitnessLevel || 'BEGINNER')} - {formatGoal(profile?.primaryGoal || 'STRENGTH')}
+            </Text>
+          </View>
         </View>
 
         {/* Stats Row */}
@@ -166,8 +172,8 @@ export default function ProfileScreen() {
 
         {/* App Info */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['3xl'], alignItems: 'center' }}>
-          <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes['2xl'], fontWeight: typography.weights.black }}>B3</Text>
-          <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm, marginTop: spacing.xs }}>Built by Ben Rickert</Text>
+          <B3Logo size={48} />
+          <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm, marginTop: spacing.md }}>Built by Ben Rickert</Text>
           <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: spacing.xs }}>Version 1.0.0</Text>
         </View>
       </ScrollView>
