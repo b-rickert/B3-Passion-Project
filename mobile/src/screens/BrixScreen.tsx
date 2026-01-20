@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../constants/theme';
+import { colors, spacing, typography, radius } from '../constants/theme';
+import { B3Logo } from '../components';
 
 const orangeOutline = {
   borderWidth: 2,
@@ -26,7 +27,6 @@ interface WorkoutRecommendation {
 }
 
 export default function BrixScreen() {
-  const navigation = useNavigation();
   const scrollViewRef = useRef<ScrollView>(null);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,24 +80,7 @@ export default function BrixScreen() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, brixResponse]);
-
-      // Update recommendation if provided
-      if (response.data.recommendation) {
-        setRecommendation(response.data.recommendation);
-      }
-    } catch (error) {
-      console.error('BRIX chat error:', error);
-      // Fallback response
-      const errorResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Hmm, I'm having trouble connecting right now. But hey, you showing up matters! 🧱 Try again in a moment.",
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorResponse]);
-    } finally {
-      setIsLoading(false);
-    }
+    }, 800);
   };
 
   useEffect(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, [messages]);
@@ -208,7 +191,7 @@ export default function BrixScreen() {
                 }}
               >
                 <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, lineHeight: 22 }}>{message.text}</Text>
-              </LinearGradient>
+              </View>
               <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: spacing.xs, alignSelf: message.isUser ? 'flex-end' : 'flex-start' }}>{formatTime(message.timestamp)}</Text>
             </View>
           ))}

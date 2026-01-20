@@ -117,7 +117,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Daily Check-In */}
-        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
+        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.xl }}>
           <TouchableOpacity
             onPress={() => navigation.navigate('DailyLog' as never)}
             activeOpacity={0.9}
@@ -125,11 +125,12 @@ export default function HomeScreen() {
             <View
               style={{
                 backgroundColor: colors.background.tertiary,
-                borderRadius: 20,
-                padding: 20,
+                borderRadius: radius.xl,
+                padding: spacing.lg,
                 flexDirection: 'row',
                 alignItems: 'center',
-                ...orangeOutline,
+                borderWidth: 2,
+                borderColor: colors.orange.DEFAULT,
               }}
             >
               <View
@@ -137,16 +138,21 @@ export default function HomeScreen() {
                   backgroundColor: colors.orange.DEFAULT + '20',
                   width: 48,
                   height: 48,
-                  borderRadius: 12,
+                  borderRadius: radius.lg,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginRight: 16,
+                  marginRight: spacing.lg,
                 }}
               >
-                <Ionicons name="clipboard-outline" size={24} color={colors.orange.DEFAULT} />
+                <Target size={24} color={colors.orange.DEFAULT} />
               </View>
-            ))}
-          </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold }}>Daily Check-In</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm }}>Log how you're feeling today</Text>
+              </View>
+              <ChevronRight size={20} color={colors.text.muted} />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* TODAY'S WORKOUT */}
