@@ -264,7 +264,7 @@ export default function WorkoutDetailScreen() {
           borderTopColor: colors.background.glassBorder,
         }}
       >
-        <TouchableOpacity onPress={() => console.log('Start workout:', workoutId)} activeOpacity={0.9}>
+        <TouchableOpacity onPress={() => navigation.navigate('WorkoutSession' as never, { workoutId } as never)} activeOpacity={0.9}>
           <LinearGradient
             colors={gradients.fire}
             start={{ x: 0, y: 0 }}

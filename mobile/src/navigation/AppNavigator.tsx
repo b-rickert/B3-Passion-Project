@@ -8,6 +8,7 @@ import { colors, gradients, radius } from '../constants/theme';
 import HomeScreen from '../screens/HomeScreen';
 import WorkoutsScreen from '../screens/WorkoutsScreen';
 import WorkoutDetailScreen from '../screens/WorkoutDetailScreen';
+import WorkoutSessionScreen from '../screens/WorkoutSessionScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import BrixScreen from '../screens/BrixScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -120,6 +121,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
+      <Stack.Screen name="WorkoutSession" component={WorkoutSessionScreen} />
       <Stack.Screen name="DailyLog" component={DailyLogScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />

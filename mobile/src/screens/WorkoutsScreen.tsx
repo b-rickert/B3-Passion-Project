@@ -440,16 +440,16 @@ export default function WorkoutsScreen() {
                     </View>
 
                     <View style={{ padding: spacing.lg, paddingTop: 0 }}>
-                      <TouchableOpacity activeOpacity={0.9}>
+                      <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('WorkoutSession' as never, { workoutId: workout.workoutId } as never)}>
                         <LinearGradient
                           colors={gradients.fire}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}
-                          style={{ 
-                            borderRadius: radius.lg, 
-                            paddingVertical: spacing.lg, 
-                            flexDirection: 'row', 
-                            alignItems: 'center', 
+                          style={{
+                            borderRadius: radius.lg,
+                            paddingVertical: spacing.lg,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             justifyContent: 'center',
                           }}
                         >
@@ -720,16 +720,16 @@ export default function WorkoutsScreen() {
 
                   {/* Action Buttons */}
                   <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-                    <TouchableOpacity activeOpacity={0.9}>
+                    <TouchableOpacity activeOpacity={0.9} onPress={() => { setShowGenerateModal(false); navigation.navigate('WorkoutSession' as never, { workoutId: generatedWorkout.workoutId } as never); }}>
                       <LinearGradient
                         colors={gradients.fire}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
-                        style={{ 
-                          borderRadius: radius.lg, 
-                          paddingVertical: spacing.lg, 
-                          flexDirection: 'row', 
-                          alignItems: 'center', 
+                        style={{
+                          borderRadius: radius.lg,
+                          paddingVertical: spacing.lg,
+                          flexDirection: 'row',
+                          alignItems: 'center',
                           justifyContent: 'center',
                         }}
                       >
