@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Dimensions, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Flame, Snowflake, Zap, Trophy, ChevronRight, Play, Target, MessageCircle, Sparkles, TrendingUp, Clock } from 'lucide-react-native';
+import { Flame, Snowflake, Zap, Trophy, ChevronRight, Play, Target, MessageCircle, Sparkles, TrendingUp, Clock, Heart, Sword, PartyPopper, HandHeart } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
-import { profileApi, brickApi, workoutApi, dailyLogApi } from '../services/api';
-import { UserProfileResponse, BrickStatsResponse, WorkoutResponse } from '../types/api';
+import { profileApi, brickApi, workoutApi, dailyLogApi, behaviorApi } from '../services/api';
+import { UserProfileResponse, BrickStatsResponse, WorkoutResponse, BehaviorProfileResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+
+// BRIX mood configurations
+const BRIX_MOODS = {
+  ENCOURAGING: { icon: Heart, color: colors.green.DEFAULT, label: 'Supportive', message: "I'm here to lift you up!" },
+  CHALLENGING: { icon: Sword, color: colors.orange.DEFAULT, label: 'Fired Up', message: "Let's push your limits!" },
+  EMPATHETIC: { icon: HandHeart, color: colors.blue.DEFAULT, label: 'Understanding', message: "I understand. Take your time." },
+  CELEBRATORY: { icon: PartyPopper, color: colors.amber.DEFAULT, label: 'Celebrating', message: "You're crushing it!" },
+};
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -14,6 +22,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [brickStats, setBrickStats] = useState<BrickStatsResponse | null>(null);
+  const [behaviorProfile, setBehaviorProfile] = useState<BehaviorProfileResponse | null>(null);
   const [recommendedWorkout, setRecommendedWorkout] = useState<WorkoutResponse | null>(null);
   const [hasLoggedToday, setHasLoggedToday] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,14 +30,16 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
-      const [profileData, statsData, workouts, logCheck] = await Promise.all([
+      const [profileData, statsData, workouts, logCheck, behaviorData] = await Promise.all([
         profileApi.getProfile(),
         brickApi.getBrickStats(),
         workoutApi.getAllWorkouts(),
         dailyLogApi.hasLoggedToday().catch(() => ({ hasLoggedToday: false })),
+        behaviorApi.getBehaviorProfile().catch(() => null),
       ]);
       setProfile(profileData);
       setBrickStats(statsData);
+      setBehaviorProfile(behaviorData);
       setHasLoggedToday(logCheck.hasLoggedToday);
       // Pick a recommended workout (first one for now, could be smarter based on profile)
       if (workouts.length > 0) {
@@ -295,18 +306,73 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* BRIX AI Coach */}
+        {/* BRIX AI Coach with Mood Indicator */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           <TouchableOpacity activeOpacity={0.95} onPress={() => navigation.navigate('Brix' as never)}>
             <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], overflow: 'hidden', borderWidth: 1, borderColor: colors.background.glassBorder, ...shadows.card }}>
               <LinearGradient colors={gradients.fire} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 3 }} />
               <View style={{ padding: spacing.xl }}>
+                {/* Mood Indicator Bar */}
+                {(() => {
+                  const coachingTone = (behaviorProfile?.coachingTone || 'ENCOURAGING') as keyof typeof BRIX_MOODS;
+                  const mood = BRIX_MOODS[coachingTone] || BRIX_MOODS.ENCOURAGING;
+                  const MoodIcon = mood.icon;
+
+                  return (
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: mood.color + '15',
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      borderRadius: radius.full,
+                      alignSelf: 'flex-start',
+                      marginBottom: spacing.md,
+                    }}>
+                      <MoodIcon size={14} color={mood.color} />
+                      <Text style={{
+                        color: mood.color,
+                        fontSize: typography.sizes.xs,
+                        fontWeight: typography.weights.bold,
+                        marginLeft: spacing.xs,
+                      }}>
+                        {mood.label} Mode
+                      </Text>
+                    </View>
+                  );
+                })()}
+
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={{ position: 'relative' }}>
-                    <LinearGradient colors={gradients.fire} style={{ width: 56, height: 56, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', ...shadows.glow }}>
-                      <MessageCircle size={28} color="#fff" />
-                    </LinearGradient>
-                    <View style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: colors.success.DEFAULT, borderRadius: 8, borderWidth: 2, borderColor: colors.background.card }} />
+                    {(() => {
+                      const coachingTone = (behaviorProfile?.coachingTone || 'ENCOURAGING') as keyof typeof BRIX_MOODS;
+                      const mood = BRIX_MOODS[coachingTone] || BRIX_MOODS.ENCOURAGING;
+                      const MoodIcon = mood.icon;
+
+                      return (
+                        <>
+                          <LinearGradient colors={gradients.fire} style={{ width: 56, height: 56, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', ...shadows.glow }}>
+                            <MessageCircle size={28} color="#fff" />
+                          </LinearGradient>
+                          {/* Mood face indicator */}
+                          <View style={{
+                            position: 'absolute',
+                            bottom: -4,
+                            right: -4,
+                            width: 24,
+                            height: 24,
+                            backgroundColor: mood.color,
+                            borderRadius: 12,
+                            borderWidth: 2,
+                            borderColor: colors.background.card,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                            <MoodIcon size={12} color="#fff" />
+                          </View>
+                        </>
+                      );
+                    })()}
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.lg }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
@@ -316,10 +382,18 @@ export default function HomeScreen() {
                       </View>
                     </View>
                     <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, lineHeight: 20 }}>
-                      {streak >= 7 ? "You're on fire! Let's push even harder today." :
-                       streak >= 3 ? "Great momentum! Ready to keep building?" :
-                       streak > 0 ? "You're making progress! Let's keep it going." :
-                       "Ready to lay your first brick today?"}
+                      {(() => {
+                        const coachingTone = (behaviorProfile?.coachingTone || 'ENCOURAGING') as keyof typeof BRIX_MOODS;
+                        const mood = BRIX_MOODS[coachingTone] || BRIX_MOODS.ENCOURAGING;
+
+                        if (coachingTone === 'CELEBRATORY') return "You're crushing it! Let's celebrate with another win!";
+                        if (coachingTone === 'CHALLENGING') return "You're ready for more. Let's push those limits!";
+                        if (coachingTone === 'EMPATHETIC') return "Take it easy today. Even small steps count.";
+                        if (streak >= 7) return "Amazing streak! Your foundation is rock solid.";
+                        if (streak >= 3) return "Great momentum! Ready to keep building?";
+                        if (streak > 0) return "You're making progress! Let's keep it going.";
+                        return "Ready to lay your first brick today?";
+                      })()}
                     </Text>
                   </View>
                   <View style={{ backgroundColor: colors.orange.DEFAULT + '15', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.full }}>

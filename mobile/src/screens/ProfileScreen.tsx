@@ -2,11 +2,21 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Settings, HelpCircle, ChevronRight, Target, Flame, Trophy, Dumbbell, Calendar, Flag, Zap, Star } from 'lucide-react-native';
+import { Settings, HelpCircle, ChevronRight, Target, Flame, Trophy, Dumbbell, Calendar, Flag, Zap, Star, Award, TrendingUp, Sunrise, Medal } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
 import { profileApi, brickApi, milestoneApi } from '../services/api';
 import { UserProfileResponse, BrickStatsResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+
+// Hardcoded achievements to showcase
+const SHOWCASE_ACHIEVEMENTS = [
+  { id: 1, name: 'First Brick', description: 'Complete your first workout', icon: Target, color: colors.orange.DEFAULT, unlocked: true },
+  { id: 2, name: 'On Fire', description: '3-day workout streak', icon: Flame, color: colors.amber.DEFAULT, unlocked: true },
+  { id: 3, name: 'Week Warrior', description: '7-day workout streak', icon: Zap, color: colors.blue.DEFAULT, unlocked: true },
+  { id: 4, name: 'Foundation Builder', description: 'Complete 10 total workouts', icon: Award, color: colors.green.DEFAULT, unlocked: true },
+  { id: 5, name: 'Early Bird', description: 'Complete a workout before 7 AM', icon: Sunrise, color: colors.purple.DEFAULT, unlocked: false },
+  { id: 6, name: 'Unstoppable', description: '30-day workout streak', icon: TrendingUp, color: colors.orange.light, unlocked: false },
+];
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -70,7 +80,7 @@ export default function ProfileScreen() {
         <View style={{ paddingTop: 70, paddingHorizontal: spacing.xl }}>
           {/* Top row with settings and logo */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl }}>
-            <TouchableOpacity onPress={() => console.log('Settings')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Settings' as never)}>
               <Settings size={24} color={colors.text.secondary} />
             </TouchableOpacity>
             <B3Logo size={48} />
@@ -95,7 +105,7 @@ export default function ProfileScreen() {
             {[
               { icon: Target, value: brickStats?.totalBricks || 0, label: 'Bricks' },
               { icon: Flame, value: brickStats?.longestStreak || 0, label: 'Best Streak' },
-              { icon: Trophy, value: milestoneCount, label: 'Badges' },
+              { icon: Trophy, value: SHOWCASE_ACHIEVEMENTS.filter(a => a.unlocked).length, label: 'Badges' },
             ].map((stat, i) => (
               <View key={i} style={{ flex: 1, backgroundColor: colors.background.glass, borderRadius: radius.xl, padding: spacing.lg, alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
                 <stat.icon size={20} color={colors.orange.DEFAULT} />
@@ -132,7 +142,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Achievements Preview */}
+        {/* Achievements Showcase */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
             <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>Achievements</Text>
@@ -140,27 +150,78 @@ export default function ProfileScreen() {
               <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.sm, fontWeight: typography.weights.semibold }}>See All</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], padding: spacing.xl, borderWidth: 1, borderColor: colors.background.glassBorder }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              {[Target, Flame, Zap, Star].map((IconComponent, index) => (
-                <View key={index} style={{ alignItems: 'center', opacity: index < milestoneCount ? 1 : 0.3 }}>
-                  <View style={{ backgroundColor: index < milestoneCount ? colors.orange.DEFAULT + '20' : colors.background.glass, width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center' }}>
-                    <IconComponent size={28} color={index < milestoneCount ? colors.orange.DEFAULT : colors.text.muted} />
+          <View style={{ backgroundColor: colors.background.card, borderRadius: radius['2xl'], padding: spacing.lg, borderWidth: 1, borderColor: colors.background.glassBorder }}>
+            {/* Achievement Icons Row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: spacing.lg }}>
+              {SHOWCASE_ACHIEVEMENTS.slice(0, 4).map((achievement) => (
+                <View key={achievement.id} style={{ alignItems: 'center', opacity: achievement.unlocked ? 1 : 0.4 }}>
+                  <View style={{
+                    backgroundColor: achievement.unlocked ? achievement.color + '20' : colors.background.glass,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderWidth: achievement.unlocked ? 2 : 0,
+                    borderColor: achievement.unlocked ? achievement.color + '40' : 'transparent'
+                  }}>
+                    <achievement.icon size={26} color={achievement.unlocked ? achievement.color : colors.text.muted} />
                   </View>
                 </View>
               ))}
             </View>
-            {milestoneCount === 0 && <Text style={{ color: colors.text.secondary, textAlign: 'center', marginTop: spacing.md, fontSize: typography.sizes.sm }}>Complete workouts to unlock achievements!</Text>}
+
+            {/* Achievement Details */}
+            <View style={{ gap: spacing.sm }}>
+              {SHOWCASE_ACHIEVEMENTS.filter(a => a.unlocked).slice(0, 3).map((achievement, index) => (
+                <View key={achievement.id} style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.background.elevated,
+                  borderRadius: radius.lg,
+                  padding: spacing.md
+                }}>
+                  <View style={{
+                    backgroundColor: achievement.color + '20',
+                    width: 40,
+                    height: 40,
+                    borderRadius: radius.md,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: spacing.md
+                  }}>
+                    <achievement.icon size={20} color={achievement.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: colors.text.primary, fontSize: typography.sizes.sm, fontWeight: typography.weights.semibold }}>
+                      {achievement.name}
+                    </Text>
+                    <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>
+                      {achievement.description}
+                    </Text>
+                  </View>
+                  <Trophy size={16} color={colors.amber.DEFAULT} />
+                </View>
+              ))}
+            </View>
+
+            {/* Locked Achievement Teaser */}
+            <View style={{ marginTop: spacing.md, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.background.glassBorder }}>
+              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xs, textAlign: 'center' }}>
+                {SHOWCASE_ACHIEVEMENTS.filter(a => !a.unlocked).length} more achievements to unlock!
+              </Text>
+            </View>
           </View>
         </View>
 
         {/* Action Buttons */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'], gap: spacing.md }}>
           {[
-            { icon: Settings, label: 'Settings' },
-            { icon: HelpCircle, label: 'Help & Support' },
+            { icon: Medal, label: 'Personal Records', route: 'PersonalRecords' },
+            { icon: Settings, label: 'Settings', route: 'Settings' },
+            { icon: HelpCircle, label: 'Help & Support', route: 'HelpSupport' },
           ].map((item, index) => (
-            <TouchableOpacity key={index} activeOpacity={0.95} onPress={() => console.log(item.label)}>
+            <TouchableOpacity key={index} activeOpacity={0.95} onPress={() => navigation.navigate(item.route as never)}>
               <View style={{ backgroundColor: colors.background.card, borderRadius: radius.xl, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
                 <item.icon size={24} color={colors.text.primary} />
                 <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold, marginLeft: spacing.lg, flex: 1 }}>{item.label}</Text>

@@ -9,9 +9,9 @@ B3 (Brick by Brick) is a mobile fitness application with an adaptive AI behavior
 ## Tech Stack
 
 - **Backend**: Java 21, Spring Boot 3.4.1, Spring Data JPA, SQLite
-- **Frontend**: React Native 0.81 with Expo 54, NativeWind 4.x, TypeScript
+- **Frontend**: React Native 0.81.5 with Expo 54, NativeWind 4.x, TypeScript
 - **Database**: SQLite (embedded, file-based at `backend/b3.db`)
-- **AI**: Ollama (Llama) via `OllamaService.java` for free local BRIX coaching responses
+- **AI**: Ollama (Llama 3.2) via `OllamaService.java` for free local BRIX coaching responses; Claude API via `ClaudeService.java` as optional alternative (requires `ANTHROPIC_API_KEY`)
 
 ## AI Setup (Ollama/Llama - Free)
 
@@ -72,7 +72,7 @@ Mobile App (React Native) → REST API (localhost:8080) → Spring Boot Services
 ### Frontend Structure (`mobile/src/`)
 - **screens/**: HomeScreen, WorkoutsScreen, WorkoutDetailScreen, ProgressScreen, BrixScreen, ProfileScreen, DailyLogScreen
 - **components/**: Card, Button, Input, Header, B3Logo, Divider
-- **services/api.ts**: Centralized typed API client with interceptors - exports `b3Api` object with `profile`, `workout`, `session`, `brick`, `dailyLog`, `milestone`, `behavior` namespaces
+- **services/api.ts**: Centralized typed API client with interceptors - exports `b3Api` object with `profile`, `workout`, `session`, `brick`, `dailyLog`, `milestone`, `behavior`, `brix` namespaces
 - **types/**: TypeScript interfaces matching backend DTOs (`api.ts`, `index.ts`)
 - **navigation/**: Bottom tab navigator via React Navigation
 - **constants/theme.ts**: Color palette (zinc-based dark theme with orange accents)
@@ -90,11 +90,11 @@ Mobile App (React Native) → REST API (localhost:8080) → Spring Boot Services
 
 The `logWorkout()` method in BehaviorProfile automatically updates streaks, consistency, motivation, momentum, and adjusts the coaching tone.
 
-**BRIX Coaching Tones** (determined by behavioral rules):
-- **Supportive/Encouraging**: Low energy, returning users, gentle encouragement
-- **Challenging**: High consistency streaks, performance improvement opportunities
-- **Empathetic**: After long breaks, low motivation periods
-- **Celebratory**: Milestone achievements, streak completions
+**BRIX Coaching Tones** (determined by behavioral rules in `BehaviorProfile.java`):
+- **ENCOURAGING**: Low energy, returning users, gentle encouragement
+- **CHALLENGING**: High consistency streaks, performance improvement opportunities
+- **EMPATHETIC**: After long breaks, low motivation periods
+- **CELEBRATORY**: Milestone achievements, streak completions
 
 **Single User Design**: This MVP uses a single demo user (profileId=1) created by DataInitializer. No authentication is implemented. The frontend API client defaults to `DEFAULT_PROFILE_ID = 1`.
 
@@ -125,7 +125,11 @@ Backend tests are in `backend/src/test/java/com/b3/`:
 - `repository/*RepositoryTest.java` - JPA query tests
 - `controller/ApiIntegrationTest.java` - Full API integration tests
 
+## Environment Variables
+
+Create a `.env` file in `backend/` for API keys (loaded via spring-dotenv):
+- `ANTHROPIC_API_KEY`: Optional, enables Claude API as BRIX backend (see `ClaudeService.java`)
+
 ## External APIs
 
 - **ExerciseDB API**: For fetching exercise data (see `ExerciseApiService.java`, configured in application.properties)
-- **Claude API**: BRIX AI responses via `ClaudeService.java` (requires `ANTHROPIC_API_KEY` environment variable)

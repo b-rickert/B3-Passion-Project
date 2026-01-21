@@ -1,33 +1,263 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Animated, Easing } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronLeft, ChevronRight, Trophy, Flame, Snowflake, Target, Award, TrendingUp, Zap } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Trophy, Flame, Snowflake, Target, Award, TrendingUp, Zap, Sunrise, Lock } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
-import { brickApi, milestoneApi } from '../services/api';
-import { BrickResponse, BrickStatsResponse, MilestoneDTO } from '../types/api';
+import { brickApi } from '../services/api';
+import { BrickResponse, BrickStatsResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+
+// Hardcoded achievements to showcase
+const SHOWCASE_ACHIEVEMENTS = [
+  { id: 1, name: 'First Brick', description: 'Complete your first workout', icon: Target, color: colors.orange.DEFAULT, unlocked: true },
+  { id: 2, name: 'On Fire', description: '3-day workout streak', icon: Flame, color: colors.amber.DEFAULT, unlocked: true },
+  { id: 3, name: 'Week Warrior', description: '7-day workout streak', icon: Zap, color: colors.blue.DEFAULT, unlocked: true },
+  { id: 4, name: 'Foundation Builder', description: 'Complete 10 total workouts', icon: Award, color: colors.green.DEFAULT, unlocked: true },
+  { id: 5, name: 'Early Bird', description: 'Complete a workout before 7 AM', icon: Sunrise, color: colors.purple.DEFAULT, unlocked: false },
+  { id: 6, name: 'Unstoppable', description: '30-day workout streak', icon: TrendingUp, color: colors.orange.light, unlocked: false },
+];
+
+// Generate mock bricks for a 7-day streak ending today
+const generateMockBricks = (): BrickResponse[] => {
+  const bricks: BrickResponse[] = [];
+  const today = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    bricks.push({
+      brickId: 100 + i,
+      brickDate: dateStr,
+      brickType: 'WORKOUT',
+      workoutName: ['Morning Flow', 'Power Hour', 'Core Blast', 'Full Body', 'HIIT Session', 'Strength Training', 'Active Recovery'][6 - i],
+      workoutType: 'STRENGTH',
+      duration: 20 + (i * 5),
+      createdAt: dateStr,
+    });
+  }
+
+  return bricks;
+};
+
+const MOCK_BRICKS = generateMockBricks();
+
+// Animated 3D Brick Component
+const AnimatedBrick = ({
+  day,
+  hasBrick,
+  isToday,
+  isFuture,
+  heatColor,
+  index
+}: {
+  day: number | null;
+  hasBrick: boolean;
+  isToday: boolean;
+  isFuture: boolean;
+  heatColor: string;
+  index: number;
+}) => {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (day !== null) {
+      // Staggered entrance animation
+      const delay = index * 15;
+
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          delay,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 100,
+          friction: 8,
+          delay,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Pulse animation for today's brick
+      if (isToday && hasBrick) {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(pulseAnim, {
+              toValue: 1.08,
+              duration: 1000,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+            Animated.timing(pulseAnim, {
+              toValue: 1,
+              duration: 1000,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      }
+    }
+  }, [day, hasBrick, isToday]);
+
+  if (day === null) {
+    return <View style={{ width: '14.28%', aspectRatio: 1, padding: 2 }} />;
+  }
+
+  // 3D brick effect colors
+  const highlightColor = hasBrick ? adjustBrightness(heatColor, 30) : 'transparent';
+  const shadowColor = hasBrick ? adjustBrightness(heatColor, -40) : 'transparent';
+
+  return (
+    <Animated.View
+      style={{
+        width: '14.28%',
+        aspectRatio: 1,
+        padding: 2,
+        opacity: opacityAnim,
+        transform: [
+          { scale: Animated.multiply(scaleAnim, isToday && hasBrick ? pulseAnim : new Animated.Value(1)) }
+        ],
+      }}
+    >
+      {hasBrick ? (
+        // 3D Brick with gradients and depth
+        <View style={{
+          flex: 1,
+          borderRadius: radius.sm + 2,
+          overflow: 'hidden',
+          shadowColor: heatColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.5,
+          shadowRadius: 4,
+          elevation: 4,
+        }}>
+          {/* Main brick body */}
+          <LinearGradient
+            colors={[highlightColor, heatColor, shadowColor]}
+            locations={[0, 0.4, 1]}
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: isToday ? 2 : 0,
+              borderColor: isToday ? '#fff' : 'transparent',
+              borderRadius: radius.sm + 2,
+            }}
+          >
+            {/* Top shine effect */}
+            <View style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '30%',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              borderTopLeftRadius: radius.sm,
+              borderTopRightRadius: radius.sm,
+            }} />
+
+            {/* Bottom shadow line */}
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              borderBottomLeftRadius: radius.sm,
+              borderBottomRightRadius: radius.sm,
+            }} />
+
+            <Text style={{
+              color: '#fff',
+              fontSize: typography.sizes.xs,
+              fontWeight: typography.weights.bold,
+              textShadowColor: 'rgba(0,0,0,0.5)',
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 2,
+            }}>
+              {day}
+            </Text>
+          </LinearGradient>
+        </View>
+      ) : (
+        // Empty day cell
+        <View style={{
+          flex: 1,
+          backgroundColor: isFuture ? 'transparent' : colors.background.glass,
+          borderRadius: radius.sm,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: isToday ? 2 : 1,
+          borderColor: isToday ? '#fff' : isFuture ? 'transparent' : colors.background.glassBorder,
+        }}>
+          <Text style={{
+            color: isFuture ? colors.text.muted : colors.text.secondary,
+            fontSize: typography.sizes.xs,
+            fontWeight: isToday ? typography.weights.bold : typography.weights.normal,
+          }}>
+            {day}
+          </Text>
+        </View>
+      )}
+    </Animated.View>
+  );
+};
+
+// Helper function to adjust color brightness
+const adjustBrightness = (hex: string, percent: number): string => {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+  const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+  const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+  return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+};
 
 export default function ProgressScreen() {
   const [brickStats, setBrickStats] = useState<BrickStatsResponse | null>(null);
   const [brickCalendar, setBrickCalendar] = useState<BrickResponse[]>([]);
-  const [milestones, setMilestones] = useState<MilestoneDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const loadData = async () => {
     try {
-      const [statsData, calendarData, milestonesData] = await Promise.all([
+      const [statsData, calendarData] = await Promise.all([
         brickApi.getBrickStats(),
         brickApi.getBrickCalendar(1, currentMonth.getFullYear(), currentMonth.getMonth() + 1),
-        milestoneApi.getAchievedMilestones(),
       ]);
-      setBrickStats(statsData);
-      setBrickCalendar(calendarData);
-      setMilestones(milestonesData.slice(0, 3));
+
+      // Merge API data with mock bricks, prioritizing mock data for demo
+      const existingDates = new Set(calendarData.map(b => b.brickDate));
+      const mergedBricks = [
+        ...calendarData,
+        ...MOCK_BRICKS.filter(b => !existingDates.has(b.brickDate))
+      ];
+
+      // Override stats with mock data to show the streak
+      const mockStats: BrickStatsResponse = {
+        ...statsData,
+        totalBricks: Math.max(statsData?.totalBricks || 0, 12),
+        currentStreak: 7,
+        longestStreak: Math.max(statsData?.longestStreak || 0, 7),
+      };
+
+      setBrickStats(mockStats);
+      setBrickCalendar(mergedBricks);
     } catch (error) {
       console.error('Error loading progress data:', error);
+      // Even on error, show mock data for demo
+      setBrickStats({ totalBricks: 12, currentStreak: 7, longestStreak: 7, thisWeekBricks: 7, thisMonthBricks: 7 });
+      setBrickCalendar(MOCK_BRICKS);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -196,38 +426,24 @@ export default function ProgressScreen() {
               ))}
             </View>
 
-            {/* Calendar Grid */}
+            {/* Animated 3D Calendar Grid */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {generateCalendarDays().map((day, index) => {
                 const brick = day ? getBrickForDate(day) : null;
                 const today = day ? isToday(day) : false;
                 const future = day ? isFutureDate(day) : false;
                 const heatColor = day ? getHeatMapColor(day) : colors.background.glass;
-                const glowStyle = day ? getHeatMapGlow(day) : {};
 
                 return (
-                  <View key={index} style={{ width: '14.28%', aspectRatio: 1, padding: 2 }}>
-                    {day !== null && (
-                      <View style={{
-                        flex: 1,
-                        backgroundColor: brick ? heatColor : future ? 'transparent' : colors.background.glass,
-                        borderRadius: radius.sm,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderWidth: today ? 2 : brick ? 0 : 1,
-                        borderColor: today ? '#fff' : brick ? 'transparent' : colors.background.glassBorder,
-                        ...glowStyle,
-                      }}>
-                        <Text style={{
-                          color: brick || today ? '#fff' : future ? colors.text.muted : colors.text.secondary,
-                          fontSize: typography.sizes.xs,
-                          fontWeight: brick || today ? typography.weights.bold : typography.weights.normal,
-                        }}>
-                          {day}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
+                  <AnimatedBrick
+                    key={index}
+                    day={day}
+                    hasBrick={!!brick}
+                    isToday={today}
+                    isFuture={future}
+                    heatColor={heatColor}
+                    index={index}
+                  />
                 );
               })}
             </View>
@@ -254,33 +470,94 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        {/* Recent Achievements */}
+        {/* Achievements */}
         <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
-          <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold, marginBottom: spacing.md }}>
-            Recent Achievements
-          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+            <Text style={{ color: colors.text.primary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>
+              Achievements
+            </Text>
+            <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>
+              {SHOWCASE_ACHIEVEMENTS.filter(a => a.unlocked).length}/{SHOWCASE_ACHIEVEMENTS.length} Unlocked
+            </Text>
+          </View>
 
-          {milestones.length === 0 ? (
-            <View style={{ backgroundColor: colors.background.card, borderRadius: radius.xl, padding: spacing['2xl'], alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
-              <Trophy size={40} color={colors.text.muted} />
-              <Text style={{ color: colors.text.primary, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold, marginTop: spacing.md }}>No achievements yet</Text>
-              <Text style={{ color: colors.text.secondary, textAlign: 'center', marginTop: spacing.xs }}>Complete workouts to earn achievements!</Text>
-            </View>
-          ) : (
-            <View style={{ gap: spacing.md }}>
-              {milestones.map((milestone) => (
-                <View key={milestone.milestoneId} style={{ backgroundColor: colors.background.card, borderRadius: radius.xl, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
-                  <LinearGradient colors={gradients.fire} style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg }}>
-                    <Award size={22} color="#fff" />
-                  </LinearGradient>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold }}>{milestone.milestoneName}</Text>
-                    <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>{milestone.description}</Text>
-                  </View>
+          {/* Unlocked Achievements */}
+          <View style={{ gap: spacing.md }}>
+            {SHOWCASE_ACHIEVEMENTS.filter(a => a.unlocked).map((achievement) => (
+              <View key={achievement.id} style={{
+                backgroundColor: colors.background.card,
+                borderRadius: radius.xl,
+                padding: spacing.lg,
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: achievement.color + '40'
+              }}>
+                <View style={{
+                  backgroundColor: achievement.color + '20',
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: spacing.lg,
+                  borderWidth: 2,
+                  borderColor: achievement.color + '40'
+                }}>
+                  <achievement.icon size={24} color={achievement.color} />
                 </View>
-              ))}
-            </View>
-          )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold }}>
+                    {achievement.name}
+                  </Text>
+                  <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>
+                    {achievement.description}
+                  </Text>
+                </View>
+                <Trophy size={18} color={colors.amber.DEFAULT} />
+              </View>
+            ))}
+          </View>
+
+          {/* Locked Achievements */}
+          <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold, marginTop: spacing.xl, marginBottom: spacing.md }}>
+            Locked
+          </Text>
+          <View style={{ gap: spacing.md }}>
+            {SHOWCASE_ACHIEVEMENTS.filter(a => !a.unlocked).map((achievement) => (
+              <View key={achievement.id} style={{
+                backgroundColor: colors.background.card,
+                borderRadius: radius.xl,
+                padding: spacing.lg,
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: colors.background.glassBorder,
+                opacity: 0.6
+              }}>
+                <View style={{
+                  backgroundColor: colors.background.glass,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: spacing.lg
+                }}>
+                  <achievement.icon size={24} color={colors.text.muted} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.base, fontWeight: typography.weights.semibold }}>
+                    {achievement.name}
+                  </Text>
+                  <Text style={{ color: colors.text.muted, fontSize: typography.sizes.sm }}>
+                    {achievement.description}
+                  </Text>
+                </View>
+                <Lock size={16} color={colors.text.muted} />
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </View>

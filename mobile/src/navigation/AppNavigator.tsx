@@ -12,6 +12,10 @@ import ProgressScreen from '../screens/ProgressScreen';
 import BrixScreen from '../screens/BrixScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DailyLogScreen from '../screens/DailyLogScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import LandingScreen from '../screens/LandingScreen';
+import PersonalRecordsScreen from '../screens/PersonalRecordsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -113,9 +117,13 @@ function TabNavigator() {
 export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
       <Stack.Screen name="DailyLog" component={DailyLogScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="PersonalRecords" component={PersonalRecordsScreen} />
     </Stack.Navigator>
   );
 }
