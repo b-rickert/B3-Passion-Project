@@ -7,6 +7,7 @@ import { colors, gradients, shadows, radius, spacing, typography } from '../cons
 import { brickApi } from '../services/api';
 import { BrickResponse, BrickStatsResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+import BrickBackground from '../components/BrickBackground';
 
 // Hardcoded achievements to showcase
 const SHOWCASE_ACHIEVEMENTS = [
@@ -356,20 +357,16 @@ export default function ProgressScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
-        <B3Logo size={80} />
-      </View>
+      <BrickBackground>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <B3Logo size={80} />
+        </View>
+      </BrickBackground>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* Background */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <LinearGradient colors={['rgba(59, 130, 246, 0.15)', 'transparent']} style={{ position: 'absolute', top: 100, left: -100, width: 300, height: 300, borderRadius: 150 }} />
-      </View>
-
+    <BrickBackground>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />}>
         {/* Header */}
         <View style={{ paddingHorizontal: spacing.xl, paddingTop: 70 }}>
@@ -560,6 +557,6 @@ export default function ProgressScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </BrickBackground>
   );
 }

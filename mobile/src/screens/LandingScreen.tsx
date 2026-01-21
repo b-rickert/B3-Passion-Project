@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight, Flame, Target, Zap } from 'lucide-react-native';
 import { colors, gradients, shadows, radius, spacing, typography } from '../constants/theme';
 import B3Logo from '../components/B3Logo';
+import BrickBackground from '../components/BrickBackground';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -122,40 +123,10 @@ export default function LandingScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* Background gradients */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <LinearGradient
-          colors={[colors.background.start, colors.background.mid, colors.background.end]}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-        />
-        {/* Decorative gradient orbs */}
-        <LinearGradient
-          colors={['rgba(249, 115, 22, 0.3)', 'transparent']}
-          style={{
-            position: 'absolute',
-            top: -150,
-            right: -100,
-            width: 400,
-            height: 400,
-            borderRadius: 200,
-          }}
-        />
-        <LinearGradient
-          colors={['rgba(59, 130, 246, 0.2)', 'transparent']}
-          style={{
-            position: 'absolute',
-            bottom: -100,
-            left: -150,
-            width: 400,
-            height: 400,
-            borderRadius: 200,
-          }}
-        />
-      </View>
-
-      {/* Floating decorative bricks */}
-      <Animated.View
+    <BrickBackground>
+      <View style={{ flex: 1 }}>
+        {/* Floating decorative bricks */}
+        <Animated.View
         style={{
           position: 'absolute',
           top: SCREEN_HEIGHT * 0.15,
@@ -365,6 +336,7 @@ export default function LandingScreen() {
           Your fitness foundation awaits
         </Text>
       </Animated.View>
-    </View>
+      </View>
+    </BrickBackground>
   );
 }

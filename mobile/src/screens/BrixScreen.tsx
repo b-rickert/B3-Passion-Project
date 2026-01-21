@@ -5,6 +5,7 @@ import { Send, MessageCircle, Zap, Smile, Battery, Dumbbell } from 'lucide-react
 import { colors, gradients, shadows, spacing, typography, radius } from '../constants/theme';
 import { B3Logo } from '../components';
 import { brixApi } from '../services/api';
+import BrickBackground from '../components/BrickBackground';
 
 interface Message {
   id: string;
@@ -75,14 +76,7 @@ export default function BrixScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* Background */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <LinearGradient colors={['rgba(249, 115, 22, 0.2)', 'transparent']} style={{ position: 'absolute', top: -100, right: -100, width: 350, height: 350, borderRadius: 175 }} />
-        <LinearGradient colors={['rgba(59, 130, 246, 0.1)', 'transparent']} style={{ position: 'absolute', bottom: 200, left: -100, width: 300, height: 300, borderRadius: 150 }} />
-      </View>
-
+    <BrickBackground>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={0}>
         {/* Header */}
         <View style={{ paddingHorizontal: spacing.xl, paddingTop: 70 }}>
@@ -251,6 +245,6 @@ export default function BrixScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </View>
+    </BrickBackground>
   );
 }

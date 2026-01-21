@@ -7,6 +7,7 @@ import { colors, gradients, shadows, radius, spacing, typography } from '../cons
 import { profileApi, brickApi, milestoneApi } from '../services/api';
 import { UserProfileResponse, BrickStatsResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+import BrickBackground from '../components/BrickBackground';
 
 // Hardcoded achievements to showcase
 const SHOWCASE_ACHIEVEMENTS = [
@@ -61,20 +62,16 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
-        <B3Logo size={80} />
-      </View>
+      <BrickBackground>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <B3Logo size={80} />
+        </View>
+      </BrickBackground>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* Background */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <LinearGradient colors={['rgba(249, 115, 22, 0.25)', 'transparent']} style={{ position: 'absolute', top: -100, right: -100, width: 350, height: 350, borderRadius: 175 }} />
-      </View>
-
+    <BrickBackground>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />}>
         {/* Header with Avatar */}
         <View style={{ paddingTop: 70, paddingHorizontal: spacing.xl }}>
@@ -238,6 +235,6 @@ export default function ProfileScreen() {
           <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: spacing.xs }}>Version 1.0.0</Text>
         </View>
       </ScrollView>
-    </View>
+    </BrickBackground>
   );
 }

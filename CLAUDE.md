@@ -18,14 +18,8 @@ B3 (Brick by Brick) is a mobile fitness application with an adaptive AI behavior
 BRIX uses Ollama to run Llama locally for free AI responses.
 
 1. **Install Ollama**: https://ollama.ai (macOS/Linux/Windows)
-2. **Pull the model**:
-   ```bash
-   ollama pull llama3.2
-   ```
-3. **Run Ollama** (runs in background):
-   ```bash
-   ollama serve
-   ```
+2. **Pull the model**: `ollama pull llama3.2`
+3. **Run Ollama**: `ollama serve` (runs in background)
 
 The backend auto-detects Ollama at `localhost:11434`. If unavailable, BRIX falls back to keyword-based responses.
 
@@ -60,20 +54,20 @@ Mobile App (React Native) → REST API (localhost:8080) → Spring Boot Services
 ```
 
 ### Backend Structure (`backend/src/main/java/com/b3/`)
-- **controller/**: REST endpoints (`/api/v1/*`) - WorkoutController, ProfileController, BrickController, BrixController, etc.
-- **service/**: Business logic including ClaudeService (AI), BrixService, WorkoutSessionService, BrickService
+- **controller/**: REST endpoints (`/api/v1/*`)
+- **service/**: Business logic including OllamaService/ClaudeService (AI), BrixService, WorkoutSessionService, BrickService
 - **repository/**: Spring Data JPA interfaces
-- **model/**: JPA entities - BehaviorProfile, Brick, Workout, WorkoutSession, DailyLog, Milestone, etc.
+- **model/**: JPA entities - BehaviorProfile, Brick, Workout, WorkoutSession, DailyLog, Milestone
 - **dto/**: Request/response DTOs with `request/` and `response/` subpackages
 - **mapper/**: Entity-to-DTO mapping utilities (manual mappers, not MapStruct)
 - **config/**: CorsConfig, DataInitializer (seeds demo data on startup)
 - **exception/**: ResourceNotFoundException, BadRequestException, DuplicateResourceException + RestExceptionHandler
 
 ### Frontend Structure (`mobile/src/`)
-- **screens/**: HomeScreen, WorkoutsScreen, WorkoutDetailScreen, ProgressScreen, BrixScreen, ProfileScreen, DailyLogScreen
+- **screens/**: HomeScreen, WorkoutsScreen, WorkoutDetailScreen, ProgressScreen, BrixScreen, ProfileScreen, DailyLogScreen, LandingScreen, SettingsScreen, PersonalRecordsScreen, HelpSupportScreen
 - **components/**: Card, Button, Input, Header, B3Logo, Divider
-- **services/api.ts**: Centralized typed API client with interceptors - exports `b3Api` object with `profile`, `workout`, `session`, `brick`, `dailyLog`, `milestone`, `behavior`, `brix` namespaces
-- **types/**: TypeScript interfaces matching backend DTOs (`api.ts`, `index.ts`)
+- **services/api.ts**: Centralized typed API client with interceptors
+- **types/**: TypeScript interfaces matching backend DTOs
 - **navigation/**: Bottom tab navigator via React Navigation
 - **constants/theme.ts**: Color palette (zinc-based dark theme with orange accents)
 
@@ -129,7 +123,4 @@ Backend tests are in `backend/src/test/java/com/b3/`:
 
 Create a `.env` file in `backend/` for API keys (loaded via spring-dotenv):
 - `ANTHROPIC_API_KEY`: Optional, enables Claude API as BRIX backend (see `ClaudeService.java`)
-
-## External APIs
-
-- **ExerciseDB API**: For fetching exercise data (see `ExerciseApiService.java`, configured in application.properties)
+- `EXERCISEDB_API_KEY`: Optional, for fetching exercise data from ExerciseDB API

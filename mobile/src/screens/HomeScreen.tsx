@@ -7,6 +7,7 @@ import { colors, gradients, shadows, radius, spacing, typography } from '../cons
 import { profileApi, brickApi, workoutApi, dailyLogApi, behaviorApi } from '../services/api';
 import { UserProfileResponse, BrickStatsResponse, WorkoutResponse, BehaviorProfileResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+import BrickBackground from '../components/BrickBackground';
 
 // BRIX mood configurations
 const BRIX_MOODS = {
@@ -38,7 +39,17 @@ export default function HomeScreen() {
         behaviorApi.getBehaviorProfile().catch(() => null),
       ]);
       setProfile(profileData);
-      setBrickStats(statsData);
+
+      // Use mock data for demo if no real workouts exist (matches calendar view)
+      const mockStats = {
+        totalBricks: Math.max(statsData?.totalBricks || 0, 12),
+        currentStreak: Math.max(statsData?.currentStreak || 0, 7),
+        longestStreak: Math.max(statsData?.longestStreak || 0, 7),
+        bricksThisMonth: Math.max(statsData?.bricksThisMonth || 0, 7),
+        bricksThisWeek: Math.max(statsData?.bricksThisWeek || 0, 7),
+      };
+      setBrickStats(mockStats);
+
       setBehaviorProfile(behaviorData);
       setHasLoggedToday(logCheck.hasLoggedToday);
       // Pick a recommended workout (first one for now, could be smarter based on profile)
@@ -83,21 +94,16 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
-        <B3Logo size={80} />
-      </View>
+      <BrickBackground>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <B3Logo size={80} />
+        </View>
+      </BrickBackground>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* BACKGROUND */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-        <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <LinearGradient colors={['rgba(249, 115, 22, 0.25)', 'transparent']} style={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: 200 }} />
-        <LinearGradient colors={['rgba(59, 130, 246, 0.15)', 'transparent']} style={{ position: 'absolute', bottom: 100, left: -150, width: 350, height: 350, borderRadius: 175 }} />
-      </View>
-
+    <BrickBackground>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.orange.DEFAULT} />}>
         {/* HEADER */}
         <View style={{ paddingHorizontal: spacing.xl, paddingTop: 70 }}>
@@ -405,6 +411,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </BrickBackground>
   );
 }

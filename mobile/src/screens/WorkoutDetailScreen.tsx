@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Clock, Dumbbell, Heart, Sparkles, Zap, Play, ListChecks, Timer } from 'lucide-react-native';
@@ -223,6 +223,17 @@ export default function WorkoutDetailScreen() {
                       <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, marginTop: spacing.md, lineHeight: 20 }}>
                         {exercise.description}
                       </Text>
+                    )}
+
+                    {/* Exercise GIF */}
+                    {exercise.videoUrl && (
+                      <View style={{ marginTop: spacing.md, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.background.elevated }}>
+                        <Image
+                          source={{ uri: exercise.videoUrl }}
+                          style={{ width: '100%', height: 200, borderRadius: radius.lg }}
+                          resizeMode="contain"
+                        />
+                      </View>
                     )}
 
                     {/* Notes */}
