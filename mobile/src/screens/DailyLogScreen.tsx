@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../constants/theme';
+import { ChevronLeft, Zap, Brain, Moon, Smile, FileText, CheckCircle } from 'lucide-react-native';
+import { colors, gradients, shadows, spacing, typography, radius } from '../constants/theme';
 import { dailyLogApi } from '../services/api';
 import { Mood, DailyLogDTO } from '../types/api';
-
-const orangeOutline = {
-  borderWidth: 2,
-  borderColor: colors.orange.DEFAULT,
-};
+import B3Logo from '../components/B3Logo';
 
 const MOOD_OPTIONS: { value: Mood; label: string; emoji: string }[] = [
   { value: 'GREAT', label: 'Great', emoji: '😄' },
@@ -72,8 +68,8 @@ export default function DailyLogScreen() {
       }
 
       Alert.alert(
-        '✅ Check-in Complete!',
-        isUpdate 
+        'Check-in Complete!',
+        isUpdate
           ? 'Your daily log has been updated.'
           : 'Your daily log has been saved. BRIX will use this to personalize your recommendations.',
         [{ text: 'Awesome!', onPress: () => navigation.goBack() }]
@@ -92,25 +88,29 @@ export default function DailyLogScreen() {
     onChange,
     lowLabel,
     highLabel,
-    icon,
+    icon: Icon,
+    color,
   }: {
     label: string;
     value: number;
     onChange: (v: number) => void;
     lowLabel: string;
     highLabel: string;
-    icon: string;
+    icon: any;
+    color: string;
   }) => (
-    <View style={{ marginBottom: 24 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-        <Text style={{ fontSize: 20, marginRight: 8 }}>{icon}</Text>
-        <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>{label}</Text>
+    <View style={{ marginBottom: spacing['2xl'] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+        <View style={{ backgroundColor: color + '20', width: 36, height: 36, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md }}>
+          <Icon size={18} color={color} />
+        </View>
+        <Text style={{ color: colors.text.primary, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold }}>{label}</Text>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-        <Text style={{ color: colors.text.muted, fontSize: 12 }}>{lowLabel}</Text>
-        <Text style={{ color: colors.text.muted, fontSize: 12 }}>{highLabel}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
+        <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>{lowLabel}</Text>
+        <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>{highLabel}</Text>
       </View>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         {[1, 2, 3, 4, 5].map((level) => (
           <TouchableOpacity
             key={level}
@@ -119,20 +119,20 @@ export default function DailyLogScreen() {
           >
             <View
               style={{
-                backgroundColor: value >= level ? colors.orange.DEFAULT : colors.background.elevated,
-                height: 48,
-                borderRadius: 12,
+                backgroundColor: value >= level ? color : colors.background.glass,
+                height: 52,
+                borderRadius: radius.lg,
                 justifyContent: 'center',
                 alignItems: 'center',
-                borderWidth: value === level ? 2 : 0,
-                borderColor: colors.orange.light,
+                borderWidth: 1,
+                borderColor: value >= level ? color : colors.background.glassBorder,
               }}
             >
               <Text
                 style={{
                   color: value >= level ? '#fff' : colors.text.muted,
-                  fontSize: 16,
-                  fontWeight: '700',
+                  fontSize: typography.sizes.lg,
+                  fontWeight: typography.weights.bold,
                 }}
               >
                 {level}
@@ -145,63 +145,47 @@ export default function DailyLogScreen() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background.secondary }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background.end }}>
+      {/* Background */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        <LinearGradient colors={['rgba(249, 115, 22, 0.2)', 'transparent']} style={{ position: 'absolute', top: -100, right: -100, width: 350, height: 350, borderRadius: 175 }} />
+        <LinearGradient colors={['rgba(59, 130, 246, 0.1)', 'transparent']} style={{ position: 'absolute', bottom: 100, left: -100, width: 300, height: 300, borderRadius: 150 }} />
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <LinearGradient
-          colors={['#2563eb', '#3b82f6', '#60a5fa']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            paddingTop: 50,
-            paddingBottom: 30,
-            paddingHorizontal: 20,
-            borderBottomLeftRadius: 20,
-            borderBottomRightRadius: 20,
-            borderWidth: 2,
-            borderColor: colors.orange.DEFAULT,
-            borderTopWidth: 0,
-          }}
-        >
+        <View style={{ paddingHorizontal: spacing.xl, paddingTop: 60 }}>
           {/* Back Button */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginBottom: 16 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginBottom: spacing.xl }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 16, marginLeft: 8 }}>Back</Text>
+              <ChevronLeft size={24} color={colors.text.secondary} />
+              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.base, marginLeft: spacing.xs }}>Back</Text>
             </View>
           </TouchableOpacity>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                width: 56,
-                height: 56,
-                borderRadius: 16,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 16,
-              }}
-            >
-              <Text style={{ fontSize: 28 }}>📋</Text>
-            </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View>
-              <Text style={{ color: '#fff', fontSize: 24, fontWeight: '800' }}>
-                {isUpdate ? 'Update Check-in' : 'Daily Check-in'}
+              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, letterSpacing: 2, textTransform: 'uppercase' }}>
+                {isUpdate ? 'Update your' : 'Daily'}
               </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 4 }}>
-                {isUpdate ? 'Update how you\'re feeling today' : 'How are you feeling today?'}
+              <Text style={{ color: colors.text.primary, fontSize: typography.sizes['4xl'], fontWeight: typography.weights.black, letterSpacing: -1 }}>
+                Check-in
+              </Text>
+              <Text style={{ color: colors.text.muted, fontSize: typography.sizes.base, marginTop: spacing.xs }}>
+                How are you feeling today?
               </Text>
             </View>
+            <B3Logo size={48} />
           </View>
-        </LinearGradient>
+        </View>
 
         {/* Update Badge */}
         {isUpdate && (
-          <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
-            <View style={{ backgroundColor: colors.blue.DEFAULT + '20', padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.blue.DEFAULT} />
-              <Text style={{ color: colors.blue.DEFAULT, marginLeft: 8, fontSize: 14 }}>
+          <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.xl }}>
+            <View style={{ backgroundColor: colors.success.DEFAULT + '20', padding: spacing.lg, borderRadius: radius.xl, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.success.DEFAULT + '40' }}>
+              <CheckCircle size={20} color={colors.success.DEFAULT} />
+              <Text style={{ color: colors.success.DEFAULT, marginLeft: spacing.md, fontSize: typography.sizes.sm, flex: 1 }}>
                 You've already checked in today. Update your log below.
               </Text>
             </View>
@@ -209,7 +193,7 @@ export default function DailyLogScreen() {
         )}
 
         {/* Form */}
-        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+        <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing['2xl'] }}>
           {/* Energy Level */}
           <SliderRow
             label="Energy Level"
@@ -217,7 +201,8 @@ export default function DailyLogScreen() {
             onChange={setEnergyLevel}
             lowLabel="Exhausted"
             highLabel="Energized"
-            icon="⚡"
+            icon={Zap}
+            color={colors.orange.DEFAULT}
           />
 
           {/* Stress Level */}
@@ -227,7 +212,8 @@ export default function DailyLogScreen() {
             onChange={setStressLevel}
             lowLabel="Relaxed"
             highLabel="Very Stressed"
-            icon="😤"
+            icon={Brain}
+            color={colors.blue.DEFAULT}
           />
 
           {/* Sleep Quality */}
@@ -237,16 +223,19 @@ export default function DailyLogScreen() {
             onChange={setSleepQuality}
             lowLabel="Poor"
             highLabel="Excellent"
-            icon="😴"
+            icon={Moon}
+            color={colors.amber.DEFAULT}
           />
 
           {/* Mood Selector */}
-          <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ fontSize: 20, marginRight: 8 }}>🎭</Text>
-              <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>Mood</Text>
+          <View style={{ marginBottom: spacing['2xl'] }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <View style={{ backgroundColor: colors.green.DEFAULT + '20', width: 36, height: 36, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md }}>
+                <Smile size={18} color={colors.green.DEFAULT} />
+              </View>
+              <Text style={{ color: colors.text.primary, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold }}>Mood</Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               {MOOD_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.value}
@@ -255,21 +244,21 @@ export default function DailyLogScreen() {
                 >
                   <View
                     style={{
-                      backgroundColor: mood === option.value ? colors.orange.DEFAULT : colors.background.tertiary,
-                      paddingVertical: 16,
-                      borderRadius: 12,
+                      backgroundColor: mood === option.value ? colors.green.DEFAULT : colors.background.card,
+                      paddingVertical: spacing.lg,
+                      borderRadius: radius.xl,
                       alignItems: 'center',
-                      ...orangeOutline,
-                      borderColor: mood === option.value ? colors.orange.light : colors.orange.DEFAULT,
+                      borderWidth: 1,
+                      borderColor: mood === option.value ? colors.green.DEFAULT : colors.background.glassBorder,
                     }}
                   >
                     <Text style={{ fontSize: 28 }}>{option.emoji}</Text>
                     <Text
                       style={{
                         color: mood === option.value ? '#fff' : colors.text.secondary,
-                        fontSize: 11,
-                        marginTop: 4,
-                        fontWeight: mood === option.value ? '600' : '400',
+                        fontSize: typography.sizes.xs,
+                        marginTop: spacing.xs,
+                        fontWeight: mood === option.value ? typography.weights.semibold : typography.weights.normal,
                       }}
                     >
                       {option.label}
@@ -281,18 +270,21 @@ export default function DailyLogScreen() {
           </View>
 
           {/* Notes */}
-          <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ fontSize: 20, marginRight: 8 }}>📝</Text>
-              <Text style={{ color: colors.text.primary, fontSize: 16, fontWeight: '600' }}>
-                Notes <Text style={{ color: colors.text.muted, fontWeight: '400' }}>(optional)</Text>
+          <View style={{ marginBottom: spacing['2xl'] }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+              <View style={{ backgroundColor: colors.text.muted + '30', width: 36, height: 36, borderRadius: radius.md, justifyContent: 'center', alignItems: 'center', marginRight: spacing.md }}>
+                <FileText size={18} color={colors.text.secondary} />
+              </View>
+              <Text style={{ color: colors.text.primary, fontSize: typography.sizes.lg, fontWeight: typography.weights.semibold }}>
+                Notes <Text style={{ color: colors.text.muted, fontWeight: typography.weights.normal, fontSize: typography.sizes.sm }}>(optional)</Text>
               </Text>
             </View>
             <View
               style={{
-                backgroundColor: colors.background.tertiary,
-                borderRadius: 12,
-                ...orangeOutline,
+                backgroundColor: colors.background.card,
+                borderRadius: radius.xl,
+                borderWidth: 1,
+                borderColor: colors.background.glassBorder,
               }}
             >
               <TextInput
@@ -304,8 +296,8 @@ export default function DailyLogScreen() {
                 numberOfLines={4}
                 style={{
                   color: colors.text.primary,
-                  fontSize: 15,
-                  padding: 16,
+                  fontSize: typography.sizes.base,
+                  padding: spacing.lg,
                   minHeight: 100,
                   textAlignVertical: 'top',
                 }}
@@ -316,37 +308,47 @@ export default function DailyLogScreen() {
           {/* Summary Card */}
           <View
             style={{
-              backgroundColor: colors.background.tertiary,
-              borderRadius: 16,
-              padding: 16,
-              ...orangeOutline,
+              backgroundColor: colors.background.card,
+              borderRadius: radius['2xl'],
+              padding: spacing.xl,
+              borderWidth: 1,
+              borderColor: colors.background.glassBorder,
+              ...shadows.card,
             }}
           >
-            <Text style={{ color: colors.text.primary, fontSize: 14, fontWeight: '600', marginBottom: 12 }}>
+            <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: typography.weights.bold, marginBottom: spacing.lg }}>
               Today's Summary
             </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24 }}>⚡</Text>
-                <Text style={{ color: colors.orange.DEFAULT, fontSize: 20, fontWeight: '700' }}>{energyLevel}</Text>
-                <Text style={{ color: colors.text.muted, fontSize: 11 }}>Energy</Text>
+                <View style={{ backgroundColor: colors.orange.DEFAULT + '20', width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <Zap size={24} color={colors.orange.DEFAULT} />
+                </View>
+                <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.xl, fontWeight: typography.weights.black }}>{energyLevel}</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>Energy</Text>
               </View>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24 }}>😤</Text>
-                <Text style={{ color: colors.text.primary, fontSize: 20, fontWeight: '700' }}>{stressLevel}</Text>
-                <Text style={{ color: colors.text.muted, fontSize: 11 }}>Stress</Text>
+                <View style={{ backgroundColor: colors.blue.DEFAULT + '20', width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <Brain size={24} color={colors.blue.DEFAULT} />
+                </View>
+                <Text style={{ color: colors.blue.DEFAULT, fontSize: typography.sizes.xl, fontWeight: typography.weights.black }}>{stressLevel}</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>Stress</Text>
               </View>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24 }}>😴</Text>
-                <Text style={{ color: colors.text.primary, fontSize: 20, fontWeight: '700' }}>{sleepQuality}</Text>
-                <Text style={{ color: colors.text.muted, fontSize: 11 }}>Sleep</Text>
+                <View style={{ backgroundColor: colors.amber.DEFAULT + '20', width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <Moon size={24} color={colors.amber.DEFAULT} />
+                </View>
+                <Text style={{ color: colors.amber.DEFAULT, fontSize: typography.sizes.xl, fontWeight: typography.weights.black }}>{sleepQuality}</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>Sleep</Text>
               </View>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24 }}>{MOOD_OPTIONS.find((m) => m.value === mood)?.emoji}</Text>
-                <Text style={{ color: colors.text.primary, fontSize: 14, fontWeight: '700' }}>
+                <View style={{ backgroundColor: colors.green.DEFAULT + '20', width: 48, height: 48, borderRadius: radius.lg, justifyContent: 'center', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <Text style={{ fontSize: 24 }}>{MOOD_OPTIONS.find((m) => m.value === mood)?.emoji}</Text>
+                </View>
+                <Text style={{ color: colors.green.DEFAULT, fontSize: typography.sizes.sm, fontWeight: typography.weights.bold }}>
                   {MOOD_OPTIONS.find((m) => m.value === mood)?.label}
                 </Text>
-                <Text style={{ color: colors.text.muted, fontSize: 11 }}>Mood</Text>
+                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs }}>Mood</Text>
               </View>
             </View>
           </View>
@@ -360,22 +362,23 @@ export default function DailyLogScreen() {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: 20,
-          paddingBottom: 32,
-          backgroundColor: colors.background.secondary,
+          padding: spacing.xl,
+          paddingBottom: 34,
+          backgroundColor: colors.background.card,
           borderTopWidth: 1,
-          borderTopColor: colors.background.elevated,
+          borderTopColor: colors.background.glassBorder,
         }}
       >
         <TouchableOpacity onPress={handleSubmit} disabled={submitting} activeOpacity={0.9}>
           <LinearGradient
-            colors={submitting ? [colors.text.muted, colors.text.muted] : [colors.orange.DEFAULT, colors.orange.dark]}
+            colors={submitting ? [colors.text.muted, colors.text.muted] : gradients.fire}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={{ borderRadius: 16, paddingVertical: 18, alignItems: 'center' }}
+            style={{ borderRadius: radius.xl, paddingVertical: spacing.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...(submitting ? {} : shadows.glow) }}
           >
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
-              {submitting ? 'Saving...' : isUpdate ? 'Update Check-in ✓' : 'Complete Check-in ✓'}
+            <CheckCircle size={22} color="#fff" />
+            <Text style={{ color: '#fff', fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, marginLeft: spacing.sm }}>
+              {submitting ? 'Saving...' : isUpdate ? 'Update Check-in' : 'Complete Check-in'}
             </Text>
           </LinearGradient>
         </TouchableOpacity>

@@ -11,7 +11,23 @@ B3 (Brick by Brick) is a mobile fitness application with an adaptive AI behavior
 - **Backend**: Java 21, Spring Boot 3.4.1, Spring Data JPA, SQLite
 - **Frontend**: React Native 0.81 with Expo 54, NativeWind 4.x, TypeScript
 - **Database**: SQLite (embedded, file-based at `backend/b3.db`)
-- **AI**: Claude API via `ClaudeService.java` for BRIX coaching responses
+- **AI**: Ollama (Llama) via `OllamaService.java` for free local BRIX coaching responses
+
+## AI Setup (Ollama/Llama - Free)
+
+BRIX uses Ollama to run Llama locally for free AI responses.
+
+1. **Install Ollama**: https://ollama.ai (macOS/Linux/Windows)
+2. **Pull the model**:
+   ```bash
+   ollama pull llama3.2
+   ```
+3. **Run Ollama** (runs in background):
+   ```bash
+   ollama serve
+   ```
+
+The backend auto-detects Ollama at `localhost:11434`. If unavailable, BRIX falls back to keyword-based responses.
 
 ## Development Commands
 

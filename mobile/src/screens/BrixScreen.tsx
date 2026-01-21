@@ -1,14 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, typography, radius } from '../constants/theme';
+import { Send, MessageCircle, Zap, Smile, Battery, Dumbbell } from 'lucide-react-native';
+import { colors, gradients, shadows, spacing, typography, radius } from '../constants/theme';
 import { B3Logo } from '../components';
-
-const orangeOutline = {
-  borderWidth: 2,
-  borderColor: colors.orange.DEFAULT,
-};
+import { brixApi } from '../services/api';
 
 interface Message {
   id: string;
@@ -17,49 +13,22 @@ interface Message {
   timestamp: Date;
 }
 
-interface WorkoutRecommendation {
-  workoutId: number;
-  name: string;
-  type: string;
-  difficulty: string;
-  duration: number;
-  reason: string;
-}
-
 export default function BrixScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [recommendation, setRecommendation] = useState<WorkoutRecommendation | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: "Hey there! I'm BRIX, your AI fitness coach. I'm here to help you build your foundation, one brick at a time. How are you feeling today?", isUser: false, timestamp: new Date() },
   ]);
 
-  const quickResponses = ["Ready to crush it!", "Feeling tired", "Need motivation", "What workout today?"];
+  const quickResponses = [
+    { text: "Ready to crush it!", icon: Zap },
+    { text: "Feeling tired", icon: Battery },
+    { text: "Need motivation", icon: Smile },
+    { text: "What workout today?", icon: Dumbbell },
+  ];
 
-  const getBrixResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('tired') || lowerMessage.includes('exhausted')) {
-      return "I hear you! Rest is just as important as the workout itself. 🧱 Remember, even the strongest walls need a solid foundation. Maybe try some light stretching or a short walk today? Tomorrow you'll come back stronger!";
-    }
-    if (lowerMessage.includes('ready') || lowerMessage.includes('crush')) {
-      return "That's the spirit! 🔥 Your energy is contagious! Let's channel that motivation into building something great. Check out the Workouts tab - I've got some perfect options waiting for you!";
-    }
-    if (lowerMessage.includes('motivation') || lowerMessage.includes('motivate')) {
-      return "Here's some truth: Every single brick you lay matters. 🧱 You're not just working out - you're building the person you want to become. The wall doesn't care if you're slow, it only cares that you show up. And YOU showed up today!";
-    }
-    if (lowerMessage.includes('workout') || lowerMessage.includes('what should')) {
-      return "Based on your profile, I'd recommend checking out the 'Full Body Strength' workout today! It's 30 minutes of compound movements that'll help you build a solid foundation. 💪 Head to the Workouts tab when you're ready!";
-    }
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-      return "Hey! Great to see you! 👋 What's on your mind today? Need a workout recommendation, some motivation, or just want to chat about your fitness journey?";
-    }
-    
-    return "I love your commitment to showing up! 🧱 Remember, every interaction here is another brick in your foundation. What else can I help you with? Feel free to ask about workouts, motivation, or your progress!";
-  };
-
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
     const userMessage: Message = {
@@ -71,16 +40,32 @@ export default function BrixScreen() {
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
+    setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Call the actual backend API
+      const response = await brixApi.chat(1, text.trim());
+
       const brixResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBrixResponse(text),
+        text: response.message,
+        isUser: false,
+        timestamp: new Date(response.timestamp),
+      };
+      setMessages(prev => [...prev, brixResponse]);
+    } catch (error) {
+      console.error('Error calling BRIX API:', error);
+      // Fallback message if API fails
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm having trouble connecting right now. Make sure the backend server is running and Ollama is set up. Let's try again in a moment!",
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, brixResponse]);
-    }, 800);
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, [messages]);
@@ -94,64 +79,37 @@ export default function BrixScreen() {
       {/* Background */}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
         <LinearGradient colors={[colors.background.start, colors.background.mid, colors.background.end]} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <LinearGradient colors={['rgba(249, 115, 22, 0.15)', 'transparent']} style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, borderRadius: 100 }} />
+        <LinearGradient colors={['rgba(249, 115, 22, 0.2)', 'transparent']} style={{ position: 'absolute', top: -100, right: -100, width: 350, height: 350, borderRadius: 175 }} />
+        <LinearGradient colors={['rgba(59, 130, 246, 0.1)', 'transparent']} style={{ position: 'absolute', bottom: 200, left: -100, width: 300, height: 300, borderRadius: 150 }} />
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={0}>
         {/* Header */}
-        <LinearGradient
-          colors={['#2563eb', '#3b82f6', '#60a5fa']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            paddingTop: 50,
-            paddingBottom: 20,
-            paddingHorizontal: 20,
-            borderBottomLeftRadius: 20,
-            borderBottomRightRadius: 20,
-            borderWidth: 2,
-            borderColor: colors.orange.DEFAULT,
-            borderTopWidth: 0,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View
-              style={{
-                backgroundColor: colors.orange.DEFAULT,
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 14,
-              }}
-            >
-              <Text style={{ fontSize: 26 }}>🤖</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800' }}>BRIX</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View
-                  style={{
-                    backgroundColor: colors.green.DEFAULT,
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    marginRight: 6,
-                  }}
-                />
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>Online • Adaptive Coach</Text>
+        <View style={{ paddingHorizontal: spacing.xl, paddingTop: 70 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <LinearGradient colors={gradients.fire} style={{ width: 56, height: 56, borderRadius: radius.xl, justifyContent: 'center', alignItems: 'center', marginRight: spacing.lg, ...shadows.glow }}>
+                <MessageCircle size={28} color="#fff" />
+              </LinearGradient>
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>BRIX</Text>
+                  <View style={{ backgroundColor: colors.success.DEFAULT + '30', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm, marginLeft: spacing.sm }}>
+                    <Text style={{ color: colors.success.DEFAULT, fontSize: 9, fontWeight: typography.weights.bold }}>AI</Text>
+                  </View>
+                </View>
+                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm }}>Powered by Llama</Text>
               </View>
             </View>
-            <B3Logo size={44} />
+            <B3Logo size={48} />
           </View>
-        </LinearGradient>
+        </View>
 
         {/* Messages */}
         <ScrollView
           ref={scrollViewRef}
-          style={{ flex: 1, paddingHorizontal: 16 }}
-          contentContainerStyle={{ paddingVertical: 16, paddingBottom: 100 }}
+          style={{ flex: 1, marginTop: spacing.xl }}
+          contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
         >
           {messages.map((message) => (
@@ -160,34 +118,27 @@ export default function BrixScreen() {
               style={{
                 alignSelf: message.isUser ? 'flex-end' : 'flex-start',
                 maxWidth: '85%',
-                marginBottom: 12,
+                marginBottom: spacing.md,
               }}
             >
               {!message.isUser && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <View
-                    style={{
-                      backgroundColor: colors.orange.DEFAULT,
-                      width: 24,
-                      height: 24,
-                      borderRadius: 12,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 6,
-                    }}
-                  >
-                    <Text style={{ fontSize: 12 }}>🤖</Text>
-                  </View>
-                  <Text style={{ color: colors.orange.DEFAULT, fontSize: 13, fontWeight: '600' }}>BRIX</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.xs }}>
+                  <LinearGradient colors={gradients.fire} style={{ width: 24, height: 24, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: spacing.xs }}>
+                    <MessageCircle size={12} color="#fff" />
+                  </LinearGradient>
+                  <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.sm, fontWeight: typography.weights.semibold }}>BRIX</Text>
                 </View>
               )}
               <View
                 style={{
-                  backgroundColor: message.isUser ? colors.blue.DEFAULT : colors.orange.DEFAULT,
-                  borderRadius: 16,
-                  borderTopRightRadius: message.isUser ? 4 : 16,
-                  borderTopLeftRadius: message.isUser ? 16 : 4,
-                  padding: 14,
+                  backgroundColor: message.isUser ? colors.blue.DEFAULT : colors.background.card,
+                  borderRadius: radius.xl,
+                  borderTopRightRadius: message.isUser ? radius.sm : radius.xl,
+                  borderTopLeftRadius: message.isUser ? radius.xl : radius.sm,
+                  padding: spacing.lg,
+                  borderWidth: message.isUser ? 0 : 1,
+                  borderColor: colors.background.glassBorder,
+                  ...shadows.card,
                 }}
               >
                 <Text style={{ color: colors.text.primary, fontSize: typography.sizes.base, lineHeight: 22 }}>{message.text}</Text>
@@ -195,44 +146,51 @@ export default function BrixScreen() {
               <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, marginTop: spacing.xs, alignSelf: message.isUser ? 'flex-end' : 'flex-start' }}>{formatTime(message.timestamp)}</Text>
             </View>
           ))}
-          
+
           {/* Loading indicator */}
           {isLoading && (
-            <View style={{ alignSelf: 'flex-start', marginBottom: 12 }}>
-              <View style={{ 
-                backgroundColor: colors.background.tertiary, 
-                paddingHorizontal: 20, 
-                paddingVertical: 14, 
-                borderRadius: 16,
-                borderBottomLeftRadius: 4,
-                ...orangeOutline,
+            <View style={{ alignSelf: 'flex-start', marginBottom: spacing.md }}>
+              <View style={{
+                backgroundColor: colors.background.card,
+                paddingHorizontal: spacing.xl,
+                paddingVertical: spacing.lg,
+                borderRadius: radius.xl,
+                borderTopLeftRadius: radius.sm,
+                borderWidth: 1,
+                borderColor: colors.background.glassBorder,
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
                 <ActivityIndicator size="small" color={colors.orange.DEFAULT} />
-                <Text style={{ color: colors.text.muted, marginLeft: 10, fontSize: 14 }}>BRIX is thinking...</Text>
+                <Text style={{ color: colors.text.muted, marginLeft: spacing.md, fontSize: typography.sizes.sm }}>BRIX is thinking...</Text>
               </View>
             </View>
           )}
         </ScrollView>
 
         {/* Quick Responses */}
-        <View style={{ paddingHorizontal: spacing.lg }}>
+        <View style={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.md }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.sm }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               {quickResponses.map((response, index) => (
                 <TouchableOpacity
                   key={index}
-                  onPress={() => sendMessage(response)}
+                  onPress={() => sendMessage(response.text)}
+                  disabled={isLoading}
                   style={{
-                    backgroundColor: colors.background.tertiary,
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 20,
-                    ...orangeOutline,
+                    backgroundColor: colors.background.card,
+                    paddingHorizontal: spacing.lg,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radius.full,
+                    borderWidth: 1,
+                    borderColor: colors.background.glassBorder,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    opacity: isLoading ? 0.5 : 1,
                   }}
                 >
-                  <Text style={{ color: colors.text.primary, fontSize: 13 }}>{response}</Text>
+                  <response.icon size={14} color={colors.orange.DEFAULT} />
+                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes.sm, marginLeft: spacing.xs }}>{response.text}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -240,8 +198,27 @@ export default function BrixScreen() {
         </View>
 
         {/* Input Bar */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, paddingBottom: 32, backgroundColor: colors.background.card, borderTopWidth: 1, borderTopColor: colors.background.glassBorder }}>
-          <View style={{ flex: 1, backgroundColor: colors.background.glass, borderRadius: radius.full, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.background.glassBorder }}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: spacing.xl,
+          paddingTop: spacing.md,
+          paddingBottom: 110,
+          backgroundColor: colors.background.card,
+          borderTopWidth: 1,
+          borderTopColor: colors.background.glassBorder
+        }}>
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.background.glass,
+            borderRadius: radius.full,
+            paddingHorizontal: spacing.xl,
+            paddingVertical: spacing.md,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: colors.background.glassBorder
+          }}>
             <TextInput
               value={inputText}
               onChangeText={setInputText}
@@ -255,18 +232,22 @@ export default function BrixScreen() {
           </View>
           <TouchableOpacity
             onPress={() => sendMessage(inputText)}
-            disabled={!inputText.trim()}
-            style={{
-              backgroundColor: inputText.trim() ? colors.orange.DEFAULT : colors.background.elevated,
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 10,
-            }}
+            disabled={!inputText.trim() || isLoading}
+            style={{ marginLeft: spacing.md }}
           >
-            <Ionicons name="send" size={20} color={colors.text.primary} />
+            <LinearGradient
+              colors={inputText.trim() && !isLoading ? gradients.fire : [colors.background.elevated, colors.background.elevated]}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                justifyContent: 'center',
+                alignItems: 'center',
+                ...((inputText.trim() && !isLoading) ? shadows.glow : {}),
+              }}
+            >
+              <Send size={20} color={inputText.trim() && !isLoading ? '#fff' : colors.text.muted} />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

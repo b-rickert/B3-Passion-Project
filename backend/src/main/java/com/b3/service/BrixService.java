@@ -29,7 +29,7 @@ public class BrixService {
     private final DailyLogRepository dailyLogRepository;
     private final BrixMessageRepository brixMessageRepository;
     private final BrickRepository brickRepository;
-    private final ClaudeService claudeService;
+    private final OllamaService ollamaService;
 
     public BrixService(UserProfileRepository userProfileRepository,
                        BehaviorProfileRepository behaviorProfileRepository,
@@ -37,14 +37,14 @@ public class BrixService {
                        DailyLogRepository dailyLogRepository,
                        BrixMessageRepository brixMessageRepository,
                        BrickRepository brickRepository,
-                       ClaudeService claudeService) {
+                       OllamaService ollamaService) {
         this.userProfileRepository = userProfileRepository;
         this.behaviorProfileRepository = behaviorProfileRepository;
         this.workoutRepository = workoutRepository;
         this.dailyLogRepository = dailyLogRepository;
         this.brixMessageRepository = brixMessageRepository;
         this.brickRepository = brickRepository;
-        this.claudeService = claudeService;
+        this.ollamaService = ollamaService;
     }
 
     // ========================================================================
@@ -81,17 +81,17 @@ public class BrixService {
     }
 
     /**
-     * Generate response - tries Claude AI first, then falls back to keywords
+     * Generate response - tries Ollama (Llama) first, then falls back to keywords
      */
     private String generateResponse(String userMessage, UserProfile user,
                                      BehaviorProfile behavior, DailyLog todaysLog,
                                      BrixMessage.Tone tone) {
-        
-        // Try Claude AI if configured
-        if (claudeService.isConfigured()) {
-            logger.info("Using Claude AI for response");
+
+        // Try Ollama (Llama) if configured and running
+        if (ollamaService.isConfigured()) {
+            logger.info("Using Ollama (Llama) for response");
             try {
-                String aiResponse = claudeService.generateBrixResponse(
+                String aiResponse = ollamaService.generateBrixResponse(
                     userMessage,
                     user.getDisplayName().split(" ")[0],
                     behavior != null ? behavior.getConsecutiveDays() : 0,
@@ -102,12 +102,12 @@ public class BrixService {
                     user.getFitnessLevel() != null ? user.getFitnessLevel().name() : null,
                     user.getPrimaryGoal() != null ? user.getPrimaryGoal().name() : null
                 );
-                
+
                 if (aiResponse != null && !aiResponse.isEmpty()) {
                     return aiResponse;
                 }
             } catch (Exception e) {
-                logger.error("Claude AI failed, falling back to keywords: {}", e.getMessage());
+                logger.error("Ollama failed, falling back to keywords: {}", e.getMessage());
             }
         }
 

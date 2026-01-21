@@ -289,6 +289,57 @@ export const milestoneApi = {
 };
 
 // ============================================================
+// BRIX AI COACH API
+// ============================================================
+
+export interface BrixChatResponse {
+  message: string;
+  tone: string;
+  timestamp: string;
+}
+
+export interface BrixRecommendation {
+  workoutId: number;
+  workoutName: string;
+  workoutType: string;
+  difficulty: string;
+  duration: number;
+  reason: string;
+}
+
+export const brixApi = {
+  chat: async (profileId: number, message: string): Promise<BrixChatResponse> => {
+    const response = await api.post<BrixChatResponse>('/brix/chat', {
+      profileId,
+      message,
+    });
+    return response.data;
+  },
+
+  getRecommendation: async (profileId: number = DEFAULT_PROFILE_ID): Promise<BrixRecommendation | null> => {
+    try {
+      const response = await api.get<BrixRecommendation>(`/brix/recommendation/${profileId}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 204) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  getMessages: async (profileId: number = DEFAULT_PROFILE_ID, limit: number = 20): Promise<any[]> => {
+    const response = await api.get(`/brix/messages/${profileId}`, { params: { limit } });
+    return response.data;
+  },
+
+  trigger: async (profileId: number, trigger: string): Promise<any> => {
+    const response = await api.post('/brix/trigger', { profileId, trigger });
+    return response.data;
+  },
+};
+
+// ============================================================
 // BEHAVIOR PROFILE API
 // ============================================================
 
@@ -324,6 +375,7 @@ export const b3Api = {
   dailyLog: dailyLogApi,
   milestone: milestoneApi,
   behavior: behaviorApi,
+  brix: brixApi,
 };
 
 export default b3Api;
