@@ -45,6 +45,8 @@ public class Exercise {
         MACHINE,
         BENCH,
         PULL_UP_BAR,
+        YOGA_MAT,
+        FOAM_ROLLER,
         OTHER
     }
 

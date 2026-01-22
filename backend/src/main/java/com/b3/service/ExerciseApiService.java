@@ -11,7 +11,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service for fetching exercises from ExerciseDB API
@@ -21,6 +24,48 @@ import java.util.List;
 public class ExerciseApiService {
 
     private static final Logger log = LoggerFactory.getLogger(ExerciseApiService.class);
+
+    // Mapping of our exercise names to ExerciseDB search terms
+    private static final Map<String, String> EXERCISE_NAME_MAP = new HashMap<>();
+
+    // Exercises that don't exist in ExerciseDB (yoga, walking, etc.)
+    private static final Set<String> SKIP_EXERCISES = Set.of(
+        "Downward Dog", "Warrior I", "Warrior II", "Child's Pose", "Cat-Cow Stretch",
+        "Cobra Pose", "Tree Pose", "Seated Forward Fold", "Pigeon Pose",
+        "Easy Run", "Interval Sprints", "Brisk Walk", "Walking Lunges Outdoors",
+        "Standing Quad Stretch", "Standing Hamstring Stretch", "Hip Flexor Stretch",
+        "Chest Opener Stretch", "Shoulder Cross-Body Stretch", "Tricep Overhead Stretch",
+        "Neck Rolls", "Foam Roller IT Band", "Foam Roller Back"
+    );
+
+    static {
+        // Map our names to ExerciseDB search terms for better matches
+        EXERCISE_NAME_MAP.put("Push-Up", "push-up");
+        EXERCISE_NAME_MAP.put("Dumbbell Bench Press", "dumbbell bench press");
+        EXERCISE_NAME_MAP.put("Dumbbell Chest Fly", "dumbbell fly");
+        EXERCISE_NAME_MAP.put("Pull-Up", "pull-up");
+        EXERCISE_NAME_MAP.put("Dumbbell Row", "dumbbell row");
+        EXERCISE_NAME_MAP.put("Superman", "superman");
+        EXERCISE_NAME_MAP.put("Shoulder Press", "dumbbell shoulder press");
+        EXERCISE_NAME_MAP.put("Lateral Raise", "dumbbell lateral raise");
+        EXERCISE_NAME_MAP.put("Bicep Curl", "dumbbell curl");
+        EXERCISE_NAME_MAP.put("Tricep Dip", "triceps dip");
+        EXERCISE_NAME_MAP.put("Bodyweight Squat", "bodyweight squat");
+        EXERCISE_NAME_MAP.put("Walking Lunge", "lunge");
+        EXERCISE_NAME_MAP.put("Calf Raise", "calf raise");
+        EXERCISE_NAME_MAP.put("Glute Bridge", "glute bridge");
+        EXERCISE_NAME_MAP.put("Wall Sit", "wall sit");
+        EXERCISE_NAME_MAP.put("Box Jump", "box jump");
+        EXERCISE_NAME_MAP.put("Plank", "plank");
+        EXERCISE_NAME_MAP.put("Crunch", "crunch");
+        EXERCISE_NAME_MAP.put("Mountain Climber", "mountain climber");
+        EXERCISE_NAME_MAP.put("Dead Bug", "dead bug");
+        EXERCISE_NAME_MAP.put("Bird Dog", "bird dog");
+        EXERCISE_NAME_MAP.put("Russian Twist", "russian twist");
+        EXERCISE_NAME_MAP.put("Burpee", "burpee");
+        EXERCISE_NAME_MAP.put("Jumping Jack", "jumping jack");
+        EXERCISE_NAME_MAP.put("High Knees", "high knee");
+    }
 
     private final ExerciseRepository exerciseRepository;
     private final WebClient webClient;
@@ -81,7 +126,7 @@ public class ExerciseApiService {
      */
     public void fetchAndCacheExercises(String bodyPart, int limit) {
         log.info("Fetching and caching {} exercises for: {}", limit, bodyPart);
-        
+
         try {
             // Fetch from API
             JsonNode[] response = webClient.get()
@@ -89,12 +134,12 @@ public class ExerciseApiService {
                 .retrieve()
                 .bodyToMono(JsonNode[].class)
                 .block();
-            
+
             if (response == null) {
                 log.warn("No response from API");
                 return;
             }
-            
+
             // Convert and save to database
             int saved = 0;
             for (JsonNode node : response) {
@@ -109,67 +154,139 @@ public class ExerciseApiService {
                     }
                 }
             }
-            
+
             log.info("Successfully cached {} new exercises", saved);
-            
+
         } catch (Exception e) {
             log.error("Error caching exercises: {}", e.getMessage(), e);
         }
     }
 
     /**
- * Convert API JSON response to Exercise entity
- */
-private Exercise convertToExercise(JsonNode node) {
-    try {
-        // Extract fields from API response
-        String name = node.has("name") ? node.get("name").asText() : null;
-        String bodyPart = node.has("bodyPart") ? node.get("bodyPart").asText() : null;
-        String equipment = node.has("equipment") ? node.get("equipment").asText() : null;
-        String target = node.has("target") ? node.get("target").asText() : "";
-        
-        // NEW: Get description from API (they added this!)
-        String apiDescription = node.has("description") ? node.get("description").asText() : "";
-        
-        // NEW: Get instructions
-        StringBuilder instructions = new StringBuilder();
-        if (node.has("instructions")) {
-            JsonNode instructionsNode = node.get("instructions");
-            if (instructionsNode.isArray()) {
-                for (JsonNode instruction : instructionsNode) {
-                    instructions.append(instruction.asText()).append(" ");
-                }
-            }
-        }
-        
-        // Build full description
-        String description = apiDescription.isEmpty() 
-            ? String.format("Target: %s. Equipment: %s", target, equipment)
-            : apiDescription;
-        
-        // NOTE: API doesn't provide GIF URL in the newer version
-        // We'll use a placeholder or you can fetch it separately
-        String gifUrl = String.format("https://exercisedb.io/exercises/%s", 
-            node.has("id") ? node.get("id").asText() : "default");
-        
-        if (name == null || bodyPart == null || equipment == null) {
-            log.warn("Missing required fields in API response");
+     * Search ExerciseDB API by exercise name and return the gifUrl if found
+     */
+    public String searchExerciseGifUrl(String exerciseName) {
+        // Skip exercises not in ExerciseDB (yoga, stretching, etc.)
+        if (SKIP_EXERCISES.contains(exerciseName)) {
+            log.info("Skipping {} - not in ExerciseDB", exerciseName);
             return null;
         }
-        
-        // Map body part to muscle group enum
-        Exercise.MuscleGroup muscleGroup = mapBodyPartToMuscleGroup(bodyPart);
-        
-        // Map equipment to equipment type enum
-        Exercise.EquipmentType equipmentType = mapEquipmentToType(equipment);
-        
-        return new Exercise(name, description, muscleGroup, equipmentType, gifUrl);
-        
-    } catch (Exception e) {
-        log.error("Error converting exercise: {}", e.getMessage());
-        return null;
+
+        // Use mapped name if available, otherwise use original
+        String searchTerm = EXERCISE_NAME_MAP.getOrDefault(exerciseName, exerciseName.toLowerCase());
+        log.info("Searching API for exercise: {} (search term: {})", exerciseName, searchTerm);
+
+        try {
+            // Search by name
+            JsonNode[] response = webClient.get()
+                .uri("/exercises/name/{name}?limit=5", searchTerm)
+                .retrieve()
+                .bodyToMono(JsonNode[].class)
+                .block();
+
+            if (response == null || response.length == 0) {
+                log.warn("No results found for: {} (searched: {})", exerciseName, searchTerm);
+                return null;
+            }
+
+            // Return the gifUrl from the first match
+            JsonNode firstResult = response[0];
+            if (firstResult.has("gifUrl")) {
+                String gifUrl = firstResult.get("gifUrl").asText();
+                log.info("Found gifUrl for {}: {}", exerciseName, gifUrl);
+                return gifUrl;
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            log.error("Error searching for exercise {}: {}", exerciseName, e.getMessage());
+            return null;
+        }
     }
-}
+
+    /**
+     * Update all local exercises with images from ExerciseDB API
+     */
+    public int refreshAllExerciseImages() {
+        log.info("Refreshing all exercise images from API");
+
+        List<Exercise> allExercises = exerciseRepository.findAll();
+        int updated = 0;
+
+        for (Exercise exercise : allExercises) {
+            String gifUrl = searchExerciseGifUrl(exercise.getName());
+            if (gifUrl != null && !gifUrl.equals(exercise.getVideoUrl())) {
+                exercise.setVideoUrl(gifUrl);
+                exerciseRepository.save(exercise);
+                updated++;
+                log.info("Updated image for: {}", exercise.getName());
+            }
+
+            // Small delay to avoid rate limiting
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        log.info("Updated images for {} exercises", updated);
+        return updated;
+    }
+
+    /**
+     * Convert API JSON response to Exercise entity
+     */
+    private Exercise convertToExercise(JsonNode node) {
+        try {
+            // Extract fields from API response
+            String name = node.has("name") ? node.get("name").asText() : null;
+            String bodyPart = node.has("bodyPart") ? node.get("bodyPart").asText() : null;
+            String equipment = node.has("equipment") ? node.get("equipment").asText() : null;
+            String target = node.has("target") ? node.get("target").asText() : "";
+
+            // Get description from API
+            String apiDescription = node.has("description") ? node.get("description").asText() : "";
+
+            // Get instructions
+            StringBuilder instructions = new StringBuilder();
+            if (node.has("instructions")) {
+                JsonNode instructionsNode = node.get("instructions");
+                if (instructionsNode.isArray()) {
+                    for (JsonNode instruction : instructionsNode) {
+                        instructions.append(instruction.asText()).append(" ");
+                    }
+                }
+            }
+
+            // Build full description
+            String description = apiDescription.isEmpty()
+                ? String.format("Target: %s. Equipment: %s", target, equipment)
+                : apiDescription;
+
+            // Get the actual gifUrl from API response
+            String gifUrl = node.has("gifUrl") ? node.get("gifUrl").asText() : null;
+
+            if (name == null || bodyPart == null || equipment == null) {
+                log.warn("Missing required fields in API response");
+                return null;
+            }
+
+            // Map body part to muscle group enum
+            Exercise.MuscleGroup muscleGroup = mapBodyPartToMuscleGroup(bodyPart);
+
+            // Map equipment to equipment type enum
+            Exercise.EquipmentType equipmentType = mapEquipmentToType(equipment);
+
+            return new Exercise(name, description, muscleGroup, equipmentType, gifUrl);
+
+        } catch (Exception e) {
+            log.error("Error converting exercise: {}", e.getMessage());
+            return null;
+        }
+    }
 
     /**
      * Map API body part to Exercise.MuscleGroup enum

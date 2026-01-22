@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Vibration } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Vibration } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
-  X, Play, Pause, SkipForward, Check, Clock, Dumbbell,
-  ChevronRight, Timer, RotateCcw, Flag
+  X, Play, Pause, SkipForward, Check, Dumbbell,
+  ChevronRight, RotateCcw, Flag,
+  Target, Flame, CircleDot, Zap, TrendingUp, Activity, Sparkles, Heart
 } from 'lucide-react-native';
 import { colors, gradients, shadows, spacing, typography, radius } from '../constants/theme';
 import { sessionApi, workoutApi } from '../services/api';
@@ -20,6 +21,24 @@ type ExerciseProgress = {
   completedSets: number;
   totalSets: number;
   isComplete: boolean;
+};
+
+// Muscle group icons and colors for premium look
+const getMuscleGroupStyle = (muscleGroup: string) => {
+  const styles: Record<string, { icon: typeof Dumbbell; gradient: string[]; label: string }> = {
+    'CHEST': { icon: Target, gradient: ['#F97316', '#EA580C'], label: 'Chest' },
+    'BACK': { icon: TrendingUp, gradient: ['#3B82F6', '#2563EB'], label: 'Back' },
+    'SHOULDERS': { icon: CircleDot, gradient: ['#8B5CF6', '#7C3AED'], label: 'Shoulders' },
+    'BICEPS': { icon: Flame, gradient: ['#EF4444', '#DC2626'], label: 'Biceps' },
+    'TRICEPS': { icon: Zap, gradient: ['#F59E0B', '#D97706'], label: 'Triceps' },
+    'LEGS': { icon: Activity, gradient: ['#10B981', '#059669'], label: 'Legs' },
+    'QUADS': { icon: Activity, gradient: ['#10B981', '#059669'], label: 'Quads' },
+    'HAMSTRINGS': { icon: Activity, gradient: ['#14B8A6', '#0D9488'], label: 'Hamstrings' },
+    'GLUTES': { icon: Activity, gradient: ['#EC4899', '#DB2777'], label: 'Glutes' },
+    'CORE': { icon: Target, gradient: ['#F97316', '#EA580C'], label: 'Core' },
+    'FULL_BODY': { icon: Sparkles, gradient: ['#6366F1', '#4F46E5'], label: 'Full Body' },
+  };
+  return styles[muscleGroup] || { icon: Dumbbell, gradient: ['#6B7280', '#4B5563'], label: muscleGroup };
 };
 
 export default function WorkoutSessionScreen() {
@@ -222,10 +241,6 @@ export default function WorkoutSessionScreen() {
     );
   };
 
-  const cancelWorkout = () => {
-    navigation.goBack();
-  };
-
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background.end, justifyContent: 'center', alignItems: 'center' }}>
@@ -248,16 +263,19 @@ export default function WorkoutSessionScreen() {
     );
   }
 
+  const muscleStyle = getMuscleGroupStyle(currentExercise.muscleGroup);
+  const MuscleIcon = muscleStyle.icon;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background.end }}>
-      {/* Background - absolutely positioned behind everything */}
+      {/* Background */}
       <LinearGradient
         colors={[colors.background.start, colors.background.mid, colors.background.end]}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         pointerEvents="none"
       />
       <LinearGradient
-        colors={['rgba(249, 115, 22, 0.15)', 'transparent']}
+        colors={[muscleStyle.gradient[0] + '20', 'transparent']}
         style={{ position: 'absolute', top: -50, right: -50, width: 300, height: 300, borderRadius: 150 }}
         pointerEvents="none"
       />
@@ -380,128 +398,140 @@ export default function WorkoutSessionScreen() {
           </View>
         )}
 
-        {/* Current Exercise Card */}
+        {/* Current Exercise Card - Premium Design */}
         <View style={{
           backgroundColor: colors.background.card,
           borderRadius: radius['2xl'],
-          padding: spacing.xl,
+          overflow: 'hidden',
           borderWidth: 1,
           borderColor: colors.background.glassBorder,
           ...shadows.card,
         }}>
-          {/* Exercise Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
-            <LinearGradient
-              colors={gradients.fire}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: radius.xl,
+          {/* Gradient accent bar at top */}
+          <LinearGradient
+            colors={muscleStyle.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ height: 4 }}
+          />
+
+          <View style={{ padding: spacing.xl }}>
+            {/* Exercise Header with Icon */}
+            <View style={{ alignItems: 'center', marginBottom: spacing.xl }}>
+              <View style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: muscleStyle.gradient[0] + '15',
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginRight: spacing.md,
-              }}
-            >
-              <Dumbbell size={24} color="#fff" />
-            </LinearGradient>
-            <View style={{ flex: 1 }}>
+                marginBottom: spacing.md,
+              }}>
+                <MuscleIcon size={40} color={muscleStyle.gradient[0]} />
+              </View>
+
               <Text style={{
                 color: colors.text.primary,
-                fontSize: typography.sizes.xl,
-                fontWeight: typography.weights.bold
+                fontSize: typography.sizes['2xl'],
+                fontWeight: typography.weights.black,
+                textAlign: 'center',
               }}>
                 {currentExercise.name}
               </Text>
-              <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
-                <View style={{
-                  backgroundColor: colors.orange.DEFAULT + '20',
-                  paddingHorizontal: spacing.sm,
-                  paddingVertical: 2,
-                  borderRadius: radius.sm
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm, gap: spacing.sm }}>
+                <Text style={{
+                  color: muscleStyle.gradient[0],
+                  fontSize: typography.sizes.sm,
+                  fontWeight: typography.weights.semibold,
                 }}>
-                  <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes.xs }}>
-                    {currentExercise.muscleGroup.replace('_', ' ')}
+                  {muscleStyle.label}
+                </Text>
+                <Text style={{ color: colors.text.muted }}>•</Text>
+                <Text style={{
+                  color: colors.text.muted,
+                  fontSize: typography.sizes.sm,
+                }}>
+                  {currentExercise.equipmentType.replace('_', ' ')}
+                </Text>
+              </View>
+            </View>
+
+            {/* Stats Grid */}
+            <View style={{
+              flexDirection: 'row',
+              backgroundColor: colors.background.elevated,
+              borderRadius: radius.xl,
+              padding: spacing.lg,
+              marginBottom: spacing.lg,
+            }}>
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ color: colors.text.muted, fontSize: 10, letterSpacing: 1, fontWeight: typography.weights.medium }}>SETS</Text>
+                <Text style={{ marginTop: spacing.xs }}>
+                  <Text style={{ color: colors.orange.DEFAULT, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>
+                    {currentProgress?.completedSets || 0}
+                  </Text>
+                  <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold }}>
+                    /{currentExercise.sets}
+                  </Text>
+                </Text>
+              </View>
+
+              {currentExercise.reps && (
+                <View style={{ flex: 1, alignItems: 'center', borderLeftWidth: 1, borderLeftColor: colors.background.glassBorder }}>
+                  <Text style={{ color: colors.text.muted, fontSize: 10, letterSpacing: 1, fontWeight: typography.weights.medium }}>REPS</Text>
+                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black, marginTop: spacing.xs }}>
+                    {currentExercise.reps}
                   </Text>
                 </View>
+              )}
+
+              {currentExercise.durationSeconds && (
+                <View style={{ flex: 1, alignItems: 'center', borderLeftWidth: 1, borderLeftColor: colors.background.glassBorder }}>
+                  <Text style={{ color: colors.text.muted, fontSize: 10, letterSpacing: 1, fontWeight: typography.weights.medium }}>TIME</Text>
+                  <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black, marginTop: spacing.xs }}>
+                    {currentExercise.durationSeconds}s
+                  </Text>
+                </View>
+              )}
+
+              <View style={{ flex: 1, alignItems: 'center', borderLeftWidth: 1, borderLeftColor: colors.background.glassBorder }}>
+                <Text style={{ color: colors.text.muted, fontSize: 10, letterSpacing: 1, fontWeight: typography.weights.medium }}>REST</Text>
+                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black, marginTop: spacing.xs }}>
+                  {currentExercise.restSeconds}s
+                </Text>
               </View>
             </View>
-          </View>
 
-          {/* Exercise GIF */}
-          {currentExercise.videoUrl && (
-            <View style={{
-              marginBottom: spacing.lg,
-              borderRadius: radius.xl,
-              overflow: 'hidden',
-              backgroundColor: colors.background.elevated
-            }}>
-              <Image
-                source={{ uri: currentExercise.videoUrl }}
-                style={{ width: '100%', height: 200 }}
-                resizeMode="contain"
-              />
-            </View>
-          )}
-
-          {/* Exercise Stats */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: spacing.xl }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, letterSpacing: 1 }}>SETS</Text>
-              <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>
-                <Text style={{ color: colors.orange.DEFAULT }}>{currentProgress?.completedSets || 0}</Text>
-                /{currentExercise.sets}
-              </Text>
-            </View>
-            {currentExercise.reps && (
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, letterSpacing: 1 }}>REPS</Text>
-                <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>
-                  {currentExercise.reps}
+            {/* Description */}
+            {currentExercise.description && (
+              <View style={{
+                backgroundColor: colors.background.elevated,
+                padding: spacing.md,
+                borderRadius: radius.lg,
+                marginBottom: spacing.md,
+              }}>
+                <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, lineHeight: 20, textAlign: 'center' }}>
+                  {currentExercise.description}
                 </Text>
               </View>
             )}
-            {currentExercise.durationSeconds && (
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, letterSpacing: 1 }}>TIME</Text>
-                <Text style={{ color: colors.text.primary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>
-                  {currentExercise.durationSeconds}s
+
+            {/* Notes */}
+            {currentExercise.notes && (
+              <View style={{
+                backgroundColor: colors.amber.DEFAULT + '15',
+                padding: spacing.md,
+                borderRadius: radius.lg,
+                borderLeftWidth: 3,
+                borderLeftColor: colors.amber.DEFAULT,
+              }}>
+                <Text style={{ color: colors.amber.DEFAULT, fontSize: typography.sizes.sm, fontWeight: typography.weights.medium }}>
+                  {currentExercise.notes}
                 </Text>
               </View>
             )}
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: colors.text.muted, fontSize: typography.sizes.xs, letterSpacing: 1 }}>REST</Text>
-              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes['3xl'], fontWeight: typography.weights.black }}>
-                {currentExercise.restSeconds}s
-              </Text>
-            </View>
           </View>
-
-          {/* Description */}
-          {currentExercise.description && (
-            <View style={{
-              backgroundColor: colors.background.elevated,
-              padding: spacing.md,
-              borderRadius: radius.lg,
-              marginBottom: spacing.lg,
-            }}>
-              <Text style={{ color: colors.text.secondary, fontSize: typography.sizes.sm, lineHeight: 20 }}>
-                {currentExercise.description}
-              </Text>
-            </View>
-          )}
-
-          {/* Notes */}
-          {currentExercise.notes && (
-            <View style={{
-              backgroundColor: colors.amber.DEFAULT + '20',
-              padding: spacing.md,
-              borderRadius: radius.lg,
-            }}>
-              <Text style={{ color: colors.amber.DEFAULT, fontSize: typography.sizes.sm }}>
-                {currentExercise.notes}
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Exercise Navigation */}
@@ -563,7 +593,7 @@ export default function WorkoutSessionScreen() {
         right: 0,
         padding: spacing.xl,
         paddingBottom: 34,
-        backgroundColor: colors.background.card,
+        backgroundColor: colors.background.card + 'F5',
         borderTopWidth: 1,
         borderTopColor: colors.background.glassBorder,
       }}>

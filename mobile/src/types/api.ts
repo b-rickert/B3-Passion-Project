@@ -44,9 +44,10 @@ export type MuscleGroup =
   | 'CHEST' | 'BACK' | 'SHOULDERS' | 'BICEPS' | 'TRICEPS' 
   | 'LEGS' | 'QUADS' | 'HAMSTRINGS' | 'GLUTES' | 'CORE' | 'FULL_BODY';
 
-export type EquipmentType = 
-  | 'BODYWEIGHT' | 'DUMBBELLS' | 'BARBELL' | 'KETTLEBELL' 
-  | 'RESISTANCE_BANDS' | 'CABLE' | 'MACHINE' | 'BENCH' | 'PULL_UP_BAR' | 'OTHER';
+export type EquipmentType =
+  | 'BODYWEIGHT' | 'DUMBBELLS' | 'BARBELL' | 'KETTLEBELL'
+  | 'RESISTANCE_BANDS' | 'CABLE' | 'MACHINE' | 'BENCH' | 'PULL_UP_BAR'
+  | 'YOGA_MAT' | 'FOAM_ROLLER' | 'OTHER';
 
 // ============================================================
 // RESPONSE DTOS (Backend → Frontend)

@@ -152,4 +152,21 @@ public class ExerciseController {
         response.put("totalExercises", exerciseRepository.count());
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Refresh all exercise images from ExerciseDB API
+     * POST /api/v1/exercises/refresh-images
+     */
+    @PostMapping("/refresh-images")
+    public ResponseEntity<Map<String, Object>> refreshImages() {
+        logger.info("POST /api/v1/exercises/refresh-images");
+
+        int updated = exerciseApiService.refreshAllExerciseImages();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("exercisesUpdated", updated);
+        response.put("totalExercises", exerciseRepository.count());
+
+        return ResponseEntity.ok(response);
+    }
 }
