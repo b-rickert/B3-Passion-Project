@@ -81,6 +81,10 @@ public class Exercise {
     @Column(name = "video_url", length = 255)
     private String videoUrl;
 
+    @Size(max = 500)
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -117,6 +121,13 @@ public class Exercise {
      */
     public boolean hasVideo() {
         return videoUrl != null && !videoUrl.isBlank();
+    }
+
+    /**
+     * Check if this exercise has an image
+     */
+    public boolean hasImage() {
+        return imageUrl != null && !imageUrl.isBlank();
     }
 
     /**
@@ -218,6 +229,14 @@ public class Exercise {
 
     public void setVideoUrl(String videoUrl) {
         this.videoUrl = videoUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LocalDateTime getCreatedAt() {

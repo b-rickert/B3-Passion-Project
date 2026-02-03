@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -198,18 +198,36 @@ export default function WorkoutDetailScreen() {
 
                   <View style={{ padding: spacing.md }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      {/* Exercise Number & Icon */}
-                      <View style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: radius.md,
-                        backgroundColor: muscleStyle.gradient[0] + '15',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: spacing.md,
-                      }}>
-                        <MuscleIcon size={24} color={muscleStyle.gradient[0]} />
-                      </View>
+                      {/* Exercise Image or Icon */}
+                      {exercise.imageUrl ? (
+                        <View style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: radius.lg,
+                          overflow: 'hidden',
+                          marginRight: spacing.md,
+                          borderWidth: 1,
+                          borderColor: muscleStyle.gradient[0] + '30',
+                        }}>
+                          <Image
+                            source={{ uri: exercise.imageUrl }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="cover"
+                          />
+                        </View>
+                      ) : (
+                        <View style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: radius.md,
+                          backgroundColor: muscleStyle.gradient[0] + '15',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginRight: spacing.md,
+                        }}>
+                          <MuscleIcon size={24} color={muscleStyle.gradient[0]} />
+                        </View>
+                      )}
 
                       {/* Exercise Info */}
                       <View style={{ flex: 1 }}>

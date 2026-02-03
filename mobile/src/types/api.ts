@@ -88,6 +88,7 @@ export interface WorkoutExerciseDTO {
   muscleGroup: string;
   equipmentType: string;
   videoUrl: string | null;
+  imageUrl: string | null;
   orderIndex: number;
   sets: number;
   reps: number | null;
@@ -277,14 +278,4 @@ export interface ProgressScreenData {
 
 export interface WorkoutDetailData extends WorkoutResponse {
   exercises: WorkoutExerciseDTO[];
-}
-
-export interface WorkoutExerciseDTO {
-  exerciseId: number;
-  exerciseName: string;
-  sets: number;
-  reps: number | null;
-  durationSeconds: number | null;
-  restSeconds: number;
-  notes: string | null;
 }

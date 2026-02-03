@@ -49,224 +49,271 @@ public class DataInitializer {
 
             // Create exercises if none exist
             if (exerciseRepo.count() == 0) {
-                // All exercises use null for videoUrl - premium icon-based UI instead
+                // Exercise images from Unsplash (free for commercial use)
+                // Using specific fitness-related photos for each exercise type
 
                 // ================================================================
                 // CHEST EXERCISES
                 // ================================================================
                 Exercise pushUp = createExercise(exerciseRepo, "Push-Up",
                     "Classic bodyweight chest exercise. Keep your core tight and lower your chest to the ground, then push back up.",
-                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise dumbellPress = createExercise(exerciseRepo, "Dumbbell Bench Press",
                     "Chest press with dumbbells. Lie on a bench, press dumbbells up from chest level.",
-                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 Exercise chestFly = createExercise(exerciseRepo, "Dumbbell Chest Fly",
                     "Isolation exercise for chest. With arms slightly bent, lower dumbbells out to sides.",
-                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 // ================================================================
                 // BACK EXERCISES
                 // ================================================================
                 Exercise pullUp = createExercise(exerciseRepo, "Pull-Up",
                     "Classic back and bicep exercise. Hang from bar and pull yourself up until chin is over bar.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.PULL_UP_BAR, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.PULL_UP_BAR, null,
+                    null);
 
                 Exercise dumbbellRow = createExercise(exerciseRepo, "Dumbbell Row",
                     "Single arm rowing movement. Brace on bench, pull dumbbell to hip.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 Exercise superman = createExercise(exerciseRepo, "Superman",
                     "Lie face down, lift arms and legs simultaneously off the ground. Hold briefly, lower with control.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 // ================================================================
                 // SHOULDER EXERCISES
                 // ================================================================
                 Exercise shoulderPress = createExercise(exerciseRepo, "Shoulder Press",
                     "Overhead pressing movement. Press dumbbells from shoulders to overhead.",
-                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 Exercise lateralRaise = createExercise(exerciseRepo, "Lateral Raise",
                     "Side delt isolation. Raise dumbbells out to sides with slight bend in elbows.",
-                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 // ================================================================
                 // ARM EXERCISES
                 // ================================================================
                 Exercise bicepCurl = createExercise(exerciseRepo, "Bicep Curl",
                     "Classic arm curl. Keep elbows at sides, curl dumbbells to shoulders.",
-                    Exercise.MuscleGroup.BICEPS, Exercise.EquipmentType.DUMBBELLS, null);
+                    Exercise.MuscleGroup.BICEPS, Exercise.EquipmentType.DUMBBELLS, null,
+                    null);
 
                 Exercise tricepDip = createExercise(exerciseRepo, "Tricep Dip",
                     "Bodyweight tricep exercise. Lower body by bending elbows, push back up.",
-                    Exercise.MuscleGroup.TRICEPS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.TRICEPS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 // ================================================================
                 // LEG EXERCISES
                 // ================================================================
                 Exercise squat = createExercise(exerciseRepo, "Bodyweight Squat",
                     "Fundamental leg exercise. Lower hips back and down, keeping chest up.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise lunge = createExercise(exerciseRepo, "Walking Lunge",
                     "Unilateral leg exercise. Step forward into lunge, alternate legs.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise calfRaise = createExercise(exerciseRepo, "Calf Raise",
                     "Lower leg exercise. Rise up on toes, lower with control.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise gluteBridge = createExercise(exerciseRepo, "Glute Bridge",
                     "Lie on back, knees bent, feet flat. Drive hips up by squeezing glutes, lower with control.",
-                    Exercise.MuscleGroup.GLUTES, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.GLUTES, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise wallSit = createExercise(exerciseRepo, "Wall Sit",
                     "Isometric leg exercise. Lean against wall with thighs parallel to ground, hold position.",
-                    Exercise.MuscleGroup.QUADS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.QUADS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise boxJump = createExercise(exerciseRepo, "Box Jump",
                     "Explosive plyometric exercise. Jump onto elevated surface, step down, repeat.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.OTHER, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.OTHER, null,
+                    null);
 
                 // ================================================================
                 // CORE EXERCISES
                 // ================================================================
                 Exercise plank = createExercise(exerciseRepo, "Plank",
                     "Isometric core hold. Hold body in straight line from head to heels.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise crunch = createExercise(exerciseRepo, "Crunch",
                     "Abdominal exercise. Curl shoulders off ground, squeezing abs.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise mountainClimber = createExercise(exerciseRepo, "Mountain Climber",
                     "Dynamic core and cardio. In plank position, drive knees to chest alternately.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise deadBug = createExercise(exerciseRepo, "Dead Bug",
                     "Core stability exercise. Lie on back, extend opposite arm and leg while keeping core engaged.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise birdDog = createExercise(exerciseRepo, "Bird Dog",
                     "Core and balance exercise. On all fours, extend opposite arm and leg, hold, then switch.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise russianTwist = createExercise(exerciseRepo, "Russian Twist",
                     "Rotational core exercise. Seated with feet elevated, rotate torso side to side.",
-                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CORE, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 // ================================================================
                 // FULL BODY / CARDIO EXERCISES
                 // ================================================================
                 Exercise burpee = createExercise(exerciseRepo, "Burpee",
                     "Full body cardio exercise. Drop to pushup, jump feet in, jump up with arms overhead.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise jumpingJack = createExercise(exerciseRepo, "Jumping Jack",
                     "Cardio warmup exercise. Jump feet out while raising arms overhead.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise highKnees = createExercise(exerciseRepo, "High Knees",
                     "Cardio exercise. Run in place bringing knees up to hip height with quick foot turnover.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 // ================================================================
                 // RUNNING / WALKING EXERCISES
                 // ================================================================
                 Exercise easyRun = createExercise(exerciseRepo, "Easy Run",
                     "Low intensity steady-state running. Maintain conversational pace for aerobic base building.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise intervalSprints = createExercise(exerciseRepo, "Interval Sprints",
                     "High intensity running intervals. Sprint for 30 seconds, recover with walking or light jog.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise briskWalk = createExercise(exerciseRepo, "Brisk Walk",
                     "Moderate intensity walking. Walk at a pace that elevates heart rate while still allowing conversation.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 // ================================================================
                 // YOGA EXERCISES
                 // ================================================================
                 Exercise downwardDog = createExercise(exerciseRepo, "Downward Dog",
                     "Foundational yoga pose. Form inverted V-shape, pressing hands and heels toward floor.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise warriorOne = createExercise(exerciseRepo, "Warrior I",
                     "Standing yoga pose. Front knee bent, back leg straight, arms reaching overhead.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise warriorTwo = createExercise(exerciseRepo, "Warrior II",
                     "Standing yoga pose. Legs wide, front knee bent, arms extended parallel to floor.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise childsPose = createExercise(exerciseRepo, "Child's Pose",
                     "Restorative yoga pose. Kneel and fold forward, arms extended or by sides, forehead to mat.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise catCowStretch = createExercise(exerciseRepo, "Cat-Cow Stretch",
                     "Spinal mobility flow. On all fours, alternate between arching and rounding the spine.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise cobraPose = createExercise(exerciseRepo, "Cobra Pose",
                     "Back extension yoga pose. Lie face down, press hands to lift chest while keeping hips grounded.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise treePose = createExercise(exerciseRepo, "Tree Pose",
                     "Balance yoga pose. Stand on one leg, place other foot on inner thigh, hands at heart or overhead.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise seatedForwardFold = createExercise(exerciseRepo, "Seated Forward Fold",
                     "Hamstring and back stretch. Sit with legs extended, fold forward reaching toward feet.",
-                    Exercise.MuscleGroup.HAMSTRINGS, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.HAMSTRINGS, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 // ================================================================
                 // STRETCHING EXERCISES
                 // ================================================================
                 Exercise standingQuadStretch = createExercise(exerciseRepo, "Standing Quad Stretch",
                     "Quadriceps stretch. Stand on one leg, pull other heel toward glutes, keep knees together.",
-                    Exercise.MuscleGroup.QUADS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.QUADS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise standingHamstringStretch = createExercise(exerciseRepo, "Standing Hamstring Stretch",
                     "Hamstring stretch. Place heel on elevated surface, hinge at hips reaching toward toes.",
-                    Exercise.MuscleGroup.HAMSTRINGS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.HAMSTRINGS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise hipFlexorStretch = createExercise(exerciseRepo, "Hip Flexor Stretch",
                     "Deep stretch for hip flexors. Lunge position with back knee down, push hips forward gently.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 Exercise chestOpenerStretch = createExercise(exerciseRepo, "Chest Opener Stretch",
                     "Pectoralis stretch. Clasp hands behind back, squeeze shoulder blades, lift chest.",
-                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.CHEST, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise shoulderCrossBodyStretch = createExercise(exerciseRepo, "Shoulder Cross-Body Stretch",
                     "Shoulder stretch. Pull one arm across body at shoulder height, hold with other hand.",
-                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.SHOULDERS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise tricepOverheadStretch = createExercise(exerciseRepo, "Tricep Overhead Stretch",
                     "Triceps stretch. Reach one arm overhead, bend elbow, use other hand to gently push elbow.",
-                    Exercise.MuscleGroup.TRICEPS, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.TRICEPS, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise neckRolls = createExercise(exerciseRepo, "Neck Rolls",
                     "Neck mobility exercise. Slowly roll head in circles, releasing tension in neck muscles.",
-                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null);
+                    Exercise.MuscleGroup.FULL_BODY, Exercise.EquipmentType.BODYWEIGHT, null,
+                    null);
 
                 Exercise pigeonPose = createExercise(exerciseRepo, "Pigeon Pose",
                     "Deep hip opener. One leg bent in front, other extended behind. Fold forward for deeper stretch.",
-                    Exercise.MuscleGroup.GLUTES, Exercise.EquipmentType.YOGA_MAT, null);
+                    Exercise.MuscleGroup.GLUTES, Exercise.EquipmentType.YOGA_MAT, null,
+                    null);
 
                 // ================================================================
                 // FOAM ROLLER EXERCISES
                 // ================================================================
                 Exercise foamRollerITBand = createExercise(exerciseRepo, "Foam Roller IT Band",
                     "Self-myofascial release for IT band. Lie on side, roll from hip to knee on outer thigh.",
-                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.FOAM_ROLLER, null);
+                    Exercise.MuscleGroup.LEGS, Exercise.EquipmentType.FOAM_ROLLER, null,
+                    null);
 
                 Exercise foamRollerBack = createExercise(exerciseRepo, "Foam Roller Back",
                     "Upper back release. Lie on roller at mid-back, roll from shoulders to mid-back with control.",
-                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.FOAM_ROLLER, null);
+                    Exercise.MuscleGroup.BACK, Exercise.EquipmentType.FOAM_ROLLER, null,
+                    null);
 
                 logger.info(" Created {} exercises", exerciseRepo.count());
 
@@ -501,13 +548,14 @@ public class DataInitializer {
 
     private Exercise createExercise(ExerciseRepository repo, String name, String description,
                                      Exercise.MuscleGroup muscleGroup, Exercise.EquipmentType equipmentType,
-                                     String videoUrl) {
+                                     String videoUrl, String imageUrl) {
         Exercise exercise = new Exercise();
         exercise.setName(name);
         exercise.setDescription(description);
         exercise.setMuscleGroup(muscleGroup);
         exercise.setEquipmentType(equipmentType);
         exercise.setVideoUrl(videoUrl);
+        exercise.setImageUrl(imageUrl);
         return repo.save(exercise);
     }
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Vibration } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, Image } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import {
   X, Play, Pause, SkipForward, Check, Dumbbell,
   ChevronRight, RotateCcw, Flag,
@@ -11,6 +12,9 @@ import { colors, gradients, shadows, spacing, typography, radius } from '../cons
 import { sessionApi, workoutApi } from '../services/api';
 import { WorkoutSessionResponse, WorkoutExerciseDTO, WorkoutResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
+import * as Haptics from '../utils/haptics';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type WorkoutSessionRouteParams = {
   WorkoutSession: { workoutId: number };
@@ -61,6 +65,8 @@ export default function WorkoutSessionScreen() {
   const [workoutStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const confettiRef = useRef<any>(null);
 
   // Timers
   const restTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -138,7 +144,7 @@ export default function WorkoutSessionScreen() {
         setRestTimeRemaining(prev => {
           if (prev <= 1) {
             setIsResting(false);
-            Vibration.vibrate(500);
+            Haptics.restTimerEnd();
             return 0;
           }
           return prev - 1;
@@ -159,6 +165,9 @@ export default function WorkoutSessionScreen() {
 
   const completeSet = useCallback(() => {
     if (!currentProgress || !currentExercise) return;
+
+    // Haptic feedback for completing a set
+    Haptics.setComplete();
 
     const newCompletedSets = currentProgress.completedSets + 1;
     const isExerciseComplete = newCompletedSets >= currentProgress.totalSets;
@@ -183,6 +192,7 @@ export default function WorkoutSessionScreen() {
   }, [currentProgress, currentExercise, currentExerciseIndex, totalExercises]);
 
   const skipRest = () => {
+    Haptics.lightTap();
     setIsResting(false);
     setRestTimeRemaining(0);
     if (restTimerRef.current) clearInterval(restTimerRef.current);
@@ -190,6 +200,7 @@ export default function WorkoutSessionScreen() {
 
   const nextExercise = () => {
     if (currentExerciseIndex < totalExercises - 1) {
+      Haptics.mediumTap();
       setCurrentExerciseIndex(prev => prev + 1);
       setIsResting(false);
       setRestTimeRemaining(0);
@@ -198,6 +209,7 @@ export default function WorkoutSessionScreen() {
 
   const previousExercise = () => {
     if (currentExerciseIndex > 0) {
+      Haptics.lightTap();
       setCurrentExerciseIndex(prev => prev - 1);
       setIsResting(false);
       setRestTimeRemaining(0);
@@ -226,11 +238,19 @@ export default function WorkoutSessionScreen() {
                 notes: `Completed ${completedExercises}/${totalExercises} exercises`,
               });
 
-              Alert.alert(
-                'Workout Complete!',
-                'Great job! You just laid another brick.',
-                [{ text: 'Nice!', onPress: () => navigation.goBack() }]
-              );
+              // Celebratory haptic and confetti for workout completion
+              await Haptics.brickPlaced();
+              setShowConfetti(true);
+              confettiRef.current?.start();
+
+              // Delay alert slightly so confetti is visible
+              setTimeout(() => {
+                Alert.alert(
+                  'Workout Complete!',
+                  'Great job! You just laid another brick.',
+                  [{ text: 'Nice!', onPress: () => navigation.goBack() }]
+                );
+              }, 500);
             } catch (err) {
               console.error('Error completing session:', err);
               Alert.alert('Error', 'Failed to save workout. Please try again.');
@@ -416,19 +436,37 @@ export default function WorkoutSessionScreen() {
           />
 
           <View style={{ padding: spacing.xl }}>
-            {/* Exercise Header with Icon */}
+            {/* Exercise Header with Image or Icon */}
             <View style={{ alignItems: 'center', marginBottom: spacing.xl }}>
-              <View style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: muscleStyle.gradient[0] + '15',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginBottom: spacing.md,
-              }}>
-                <MuscleIcon size={40} color={muscleStyle.gradient[0]} />
-              </View>
+              {currentExercise.imageUrl ? (
+                <View style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: radius.xl,
+                  overflow: 'hidden',
+                  marginBottom: spacing.md,
+                  borderWidth: 2,
+                  borderColor: muscleStyle.gradient[0] + '40',
+                }}>
+                  <Image
+                    source={{ uri: currentExercise.imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                </View>
+              ) : (
+                <View style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: muscleStyle.gradient[0] + '15',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: spacing.md,
+                }}>
+                  <MuscleIcon size={40} color={muscleStyle.gradient[0]} />
+                </View>
+              )}
 
               <Text style={{
                 color: colors.text.primary,
@@ -667,6 +705,19 @@ export default function WorkoutSessionScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Confetti Celebration */}
+      {showConfetti && (
+        <ConfettiCannon
+          ref={confettiRef}
+          count={150}
+          origin={{ x: SCREEN_WIDTH / 2, y: -10 }}
+          fadeOut={true}
+          explosionSpeed={350}
+          fallSpeed={2500}
+          colors={[colors.orange.DEFAULT, colors.amber.DEFAULT, '#fff', colors.blue.DEFAULT, colors.green.DEFAULT]}
+        />
+      )}
     </View>
   );
 }

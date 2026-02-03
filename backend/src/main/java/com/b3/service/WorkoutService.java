@@ -130,6 +130,7 @@ public class WorkoutService {
         dto.setMuscleGroup(we.getExercise().getMuscleGroup() != null ? we.getExercise().getMuscleGroup().name() : null);
         dto.setEquipmentType(we.getExercise().getEquipmentType() != null ? we.getExercise().getEquipmentType().name() : null);
         dto.setVideoUrl(we.getExercise().getVideoUrl());
+        dto.setImageUrl(we.getExercise().getImageUrl());
         dto.setOrderIndex(we.getOrderIndex());
         dto.setSets(we.getSets());
         dto.setReps(we.getReps());

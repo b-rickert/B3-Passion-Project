@@ -216,8 +216,8 @@ public class ExerciseApiService {
 
         for (Exercise exercise : allExercises) {
             String gifUrl = searchExerciseGifUrl(exercise.getName());
-            if (gifUrl != null && !gifUrl.equals(exercise.getVideoUrl())) {
-                exercise.setVideoUrl(gifUrl);
+            if (gifUrl != null && !gifUrl.equals(exercise.getImageUrl())) {
+                exercise.setImageUrl(gifUrl);
                 exerciseRepository.save(exercise);
                 updated++;
                 log.info("Updated image for: {}", exercise.getName());

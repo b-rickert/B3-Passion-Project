@@ -14,6 +14,7 @@ B3 is a mobile fitness application that helps users rebuild their health through
 
 ## Table of Contents
 
+- [Recent Updates](#recent-updates)
 - [Quick Start](#quick-start)
 - [Project Overview](#project-overview)
 - [Features](#features)
@@ -24,6 +25,16 @@ B3 is a mobile fitness application that helps users rebuild their health through
 - [API Reference](#api-reference)
 - [Development](#development)
 - [Author](#author)
+
+---
+
+## Recent Updates
+
+| Date | Update |
+|------|--------|
+| **Jan 2026** | Added **confetti celebration** on workout completion for a rewarding finish. |
+| **Jan 2026** | Added **exercise images** from Unsplash to all 40+ exercises for visual guidance. |
+| **Jan 2026** | Added **haptic feedback** throughout the app for a more polished, tactile experience. |
 
 ---
 

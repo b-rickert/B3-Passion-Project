@@ -11,7 +11,8 @@ public class WorkoutExerciseDTO {
     private String muscleGroup;
     private String equipmentType;
     private String videoUrl;
-    
+    private String imageUrl;
+
     private Integer orderIndex;
     private Integer sets;
     private Integer reps;
@@ -38,7 +39,10 @@ public class WorkoutExerciseDTO {
     
     public String getVideoUrl() { return videoUrl; }
     public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
-    
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
     public Integer getOrderIndex() { return orderIndex; }
     public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
     

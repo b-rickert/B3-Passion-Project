@@ -1,6 +1,6 @@
 # B3 Project Overview
 
-**For Board Presentation | January 2025**
+**For Board Presentation | January 2026**
 
 ---
 
@@ -131,6 +131,15 @@ The biggest innovation is psychological:
 - Streak and milestone tracking
 - Daily energy/mood/stress logging
 - Profile settings and preferences
+
+### Recent Improvements (January 2026)
+
+| Feature | Description |
+|---------|-------------|
+| **Haptic Feedback** | Tactile feedback throughout the app - workout completion, set tracking, daily check-ins, navigation |
+| **Confetti Celebration** | Celebratory confetti animation when completing a workout |
+| **Exercise Display** | Color-coded muscle group icons for all 46 exercises |
+| **ExerciseDB Integration** | API integration ready for animated exercise GIFs (optional enhancement) |
 
 ---
 

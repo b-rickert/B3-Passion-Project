@@ -16,6 +16,7 @@ interface ExerciseDetail {
   muscleGroup: string;
   equipmentType: string;
   videoUrl: string;
+  imageUrl: string;
   sets: number;
   reps: number;
   durationSeconds: number;
@@ -387,9 +388,9 @@ export default function WorkoutsScreen() {
                               borderColor: colors.background.glassBorder,
                             }}
                           >
-                            {exercise.videoUrl ? (
+                            {exercise.imageUrl ? (
                               <Image
-                                source={{ uri: exercise.videoUrl }}
+                                source={{ uri: exercise.imageUrl }}
                                 style={{
                                   width: 50,
                                   height: 50,

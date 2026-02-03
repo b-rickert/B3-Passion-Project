@@ -6,6 +6,7 @@ import { colors, gradients, shadows, spacing, typography, radius } from '../cons
 import { B3Logo } from '../components';
 import { brixApi } from '../services/api';
 import BrickBackground from '../components/BrickBackground';
+import * as Haptics from '../utils/haptics';
 
 interface Message {
   id: string;
@@ -32,6 +33,9 @@ export default function BrixScreen() {
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
+    // Haptic feedback when sending message
+    Haptics.lightTap();
+
     const userMessage: Message = {
       id: Date.now().toString(),
       text: text.trim(),
@@ -53,6 +57,8 @@ export default function BrixScreen() {
         isUser: false,
         timestamp: new Date(response.timestamp),
       };
+      // Subtle haptic when BRIX responds
+      Haptics.selection();
       setMessages(prev => [...prev, brixResponse]);
     } catch (error) {
       console.error('Error calling BRIX API:', error);

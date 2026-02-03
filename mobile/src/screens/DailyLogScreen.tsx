@@ -7,6 +7,7 @@ import { colors, gradients, shadows, spacing, typography, radius } from '../cons
 import { dailyLogApi } from '../services/api';
 import { Mood, DailyLogDTO } from '../types/api';
 import B3Logo from '../components/B3Logo';
+import * as Haptics from '../utils/haptics';
 
 const MOOD_OPTIONS: { value: Mood; label: string; emoji: string }[] = [
   { value: 'GREAT', label: 'Great', emoji: '😄' },
@@ -67,6 +68,9 @@ export default function DailyLogScreen() {
         await dailyLogApi.submitDailyLog(logData);
       }
 
+      // Success haptic for check-in completion
+      await Haptics.success();
+
       Alert.alert(
         'Check-in Complete!',
         isUpdate
@@ -114,7 +118,10 @@ export default function DailyLogScreen() {
         {[1, 2, 3, 4, 5].map((level) => (
           <TouchableOpacity
             key={level}
-            onPress={() => onChange(level)}
+            onPress={() => {
+              Haptics.selection();
+              onChange(level);
+            }}
             style={{ flex: 1 }}
           >
             <View
@@ -239,7 +246,10 @@ export default function DailyLogScreen() {
               {MOOD_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.value}
-                  onPress={() => setMood(option.value)}
+                  onPress={() => {
+                    Haptics.selection();
+                    setMood(option.value);
+                  }}
                   style={{ flex: 1 }}
                 >
                   <View

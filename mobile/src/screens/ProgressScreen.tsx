@@ -8,6 +8,7 @@ import { brickApi } from '../services/api';
 import { BrickResponse, BrickStatsResponse } from '../types/api';
 import B3Logo from '../components/B3Logo';
 import BrickBackground from '../components/BrickBackground';
+import * as Haptics from '../utils/haptics';
 
 // Hardcoded achievements to showcase
 const SHOWCASE_ACHIEVEMENTS = [
@@ -348,6 +349,7 @@ export default function ProgressScreen() {
   };
 
   const changeMonth = (delta: number) => {
+    Haptics.lightTap();
     const newDate = new Date(currentMonth);
     newDate.setMonth(newDate.getMonth() + delta);
     setCurrentMonth(newDate);
