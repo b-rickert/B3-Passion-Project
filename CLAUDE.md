@@ -12,7 +12,9 @@ B3 (Brick by Brick) is a mobile fitness app with an adaptive AI coach called BRI
 ```bash
 cd backend
 mvn spring-boot:run              # Run locally (port 8080, SQLite)
-mvn test                         # Run tests
+mvn test                         # Run all tests
+mvn test -Dtest=BrickServiceTest # Run single test class
+mvn test -Dtest=BrickServiceTest#testCreateBrick  # Run single test method
 mvn clean package -DskipTests    # Build JAR for Docker
 ```
 
@@ -109,3 +111,12 @@ EXERCISEDB_API_KEY=your-key  # Optional, for exercise GIFs
 - `DataInitializer.java` seeds default user, 40+ exercises, and workouts on startup
 - Mobile uses NativeWind (Tailwind for React Native)
 - Haptic feedback and confetti animations implemented
+- Mobile API base URL is hardcoded in `mobile/src/services/api.ts` (localhost:8080)
+
+## Testing
+
+Backend tests are organized by layer:
+- **Model tests** (`model/*Test.java`) - Entity validation and business logic
+- **Service tests** (`service/*Test.java`) - Business logic with mocked repositories
+- **Repository tests** (`repository/*Test.java`) - JPA queries
+- **Integration tests** (`ApiIntegrationTest.java`) - Full API endpoint testing

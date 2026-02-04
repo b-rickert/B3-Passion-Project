@@ -27,9 +27,8 @@ A detailed walkthrough of the B3 codebase with specific code references for port
 ollama pull llama3.2
 ollama serve
 
-# 2. Start backend (new terminal)
-cd backend
-mvn spring-boot:run    # Runs on http://localhost:8080
+# 2. Start backend + PostgreSQL with Docker (new terminal)
+docker-compose up --build    # Runs on http://localhost:8080
 
 # 3. Start mobile app (new terminal)
 cd mobile
@@ -37,7 +36,14 @@ npm install
 npx expo start         # Press 'i' for iOS, 'a' for Android
 ```
 
-**Reset database:** Delete `backend/b3.db` to regenerate with fresh demo data.
+**Reset database:** Run `docker-compose down -v && docker-compose up --build` to reset with fresh demo data.
+
+**Alternative (SQLite - no Docker required):**
+```bash
+cd backend
+mvn spring-boot:run    # Uses local SQLite file (b3.db)
+```
+Delete `backend/b3.db` to reset SQLite database.
 
 ---
 
@@ -1252,7 +1258,7 @@ const quickResponses = [
 
 ---
 
-## Interview Talking Points
+## Talking Points
 
 ### AI & Personalization
 1. **AI Fallback Pattern:** "BRIX uses graceful degradation—Ollama (Llama 3.2) first, keyword matching as backup. The app always responds, even if the AI is down."
