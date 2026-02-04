@@ -17,6 +17,17 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Seeds the database with demo data on application startup.
  * Creates a default user, sample exercises, and workouts for demo purposes.
+ *
+ * KEY DESIGN: CommandLineRunner pattern for database seeding.
+ * This runs AFTER Spring Boot starts but BEFORE the app serves requests.
+ *
+ * Key design decisions:
+ * 1. Idempotent - Only seeds if tables are empty (count() == 0)
+ * 2. Immediate usability - App works out of the box with demo data
+ * 3. Easy reset - Delete b3.db file to regenerate fresh data
+ * 4. Realistic content - 40+ exercises, 13 workouts, proper relationships
+ *
+ * For production, this would be replaced with Flyway/Liquibase migrations.
  */
 @Configuration
 public class DataInitializer {

@@ -220,6 +220,16 @@ export default function WorkoutSessionScreen() {
     setIsPaused(prev => !prev);
   };
 
+  /**
+   * KEY DESIGN: Multi-sensory celebration on workout completion.
+   * When a user finishes, we trigger THREE feedback channels simultaneously:
+   * 1. Haptic - brickPlaced() gives satisfying heavy + light tap sequence
+   * 2. Visual - Confetti cannon animation
+   * 3. Interaction - Success alert with positive messaging
+   *
+   * This creates a memorable "reward moment" that reinforces the behavior.
+   * The 500ms delay before the alert ensures confetti is visible first.
+   */
   const finishWorkout = async () => {
     if (!session) return;
 
@@ -238,7 +248,7 @@ export default function WorkoutSessionScreen() {
                 notes: `Completed ${completedExercises}/${totalExercises} exercises`,
               });
 
-              // Celebratory haptic and confetti for workout completion
+              // Multi-sensory celebration: haptic + visual + interaction
               await Haptics.brickPlaced();
               setShowConfetti(true);
               confettiRef.current?.start();

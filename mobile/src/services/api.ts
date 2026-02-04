@@ -1,3 +1,18 @@
+/**
+ * KEY DESIGN: Typed API client with domain-specific modules.
+ *
+ * Architecture:
+ * 1. Single axios instance with interceptors for logging/error handling
+ * 2. Organized into domain modules: profileApi, workoutApi, sessionApi, etc.
+ * 3. All functions return typed responses (TypeScript interfaces)
+ * 4. Combined export (b3Api) for convenient imports
+ *
+ * Benefits:
+ * - Consistent error handling across all API calls
+ * - Request/response logging in one place
+ * - Type safety catches API misuse at compile time
+ * - Easy to find endpoints: b3Api.workout.getWorkoutById(1)
+ */
 import axios, { AxiosInstance, AxiosError } from 'axios';
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 import {

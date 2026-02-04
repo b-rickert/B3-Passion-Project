@@ -3,6 +3,21 @@ import { View, Dimensions, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../constants/theme';
 
+/**
+ * KEY DESIGN: Procedurally generated 3D brick wall background.
+ *
+ * Key techniques:
+ * 1. useMemo() - Brick positions calculated once and cached (no re-render flicker)
+ * 2. Deterministic pseudo-random - Formula (row*17 + col*31) % 100 creates
+ *    organic variation but renders identically every time
+ * 3. 3D effect via edge overlays - Each brick has highlight (top/left) and
+ *    shadow (bottom/right) edges creating beveled appearance
+ * 4. Three shade levels - Adds depth without actual 3D rendering
+ * 5. Gradient accent glows - Subtle orange/blue gradients add warmth
+ *
+ * This creates the signature B3 visual without images or complex assets.
+ */
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Brick dimensions
@@ -88,10 +103,11 @@ export default function BrickBackground({
         const x = col * (BRICK_WIDTH + MORTAR_GAP) + offsetX;
         const y = row * (BRICK_HEIGHT + MORTAR_GAP);
 
-        // Vary opacity and shade for more organic look
+        // Deterministic "random" for organic look - same seed = same visual every render
+        // Using primes (17, 31) creates good distribution without actual randomness
         const randomSeed = (row * 17 + col * 31) % 100;
         const opacity = (0.75 + (randomSeed / 400)) * opacityMultiplier;
-        const shade = randomSeed % 3;
+        const shade = randomSeed % 3;  // 0, 1, or 2 for three depth levels
 
         result.push({ x, y, opacity, shade });
       }

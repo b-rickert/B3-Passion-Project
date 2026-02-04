@@ -126,6 +126,20 @@ public class OllamaService {
         return chat(systemPrompt, userMessage);
     }
 
+    /**
+     * KEY DESIGN: Dynamic system prompt construction.
+     * We inject user context (streak, bricks, energy, stress, mood) directly
+     * into the AI's system prompt. This means the AI "knows" the user's current
+     * state without us having to re-explain it in every message.
+     *
+     * The prompt defines BRIX's personality and gives explicit guidelines:
+     * - Use brick/wall metaphors naturally
+     * - Be adaptive (empathetic when struggling, challenging when ready)
+     * - Keep responses concise (2-4 sentences)
+     * - Always address user by first name
+     *
+     * This is prompt engineering in action—shaping AI behavior through context.
+     */
     private String buildBrixSystemPrompt(String userName, int streak, int totalBricks,
                                           Integer energyLevel, Integer stressLevel,
                                           String mood, String fitnessLevel, String primaryGoal) {

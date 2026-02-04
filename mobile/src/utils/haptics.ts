@@ -1,8 +1,18 @@
 import * as Haptics from 'expo-haptics';
 
 /**
- * Haptic feedback utility for B3
- * Provides consistent haptic patterns throughout the app
+ * Haptic feedback utility for B3.
+ * Provides consistent haptic patterns throughout the app.
+ *
+ * KEY DESIGN: Semantic haptics abstraction layer.
+ * Instead of calling Haptics.impactAsync() directly throughout the app,
+ * we created semantic functions that describe WHAT happened, not HOW to vibrate.
+ *
+ * Benefits:
+ * 1. Consistent patterns across the app (setComplete always feels the same)
+ * 2. Easy to tweak globally (change brickPlaced() once, affects everywhere)
+ * 3. Self-documenting code (Haptics.setComplete() vs Haptics.impactAsync(Medium))
+ * 4. Custom sequences for signature moments (brickPlaced = heavy + light tap)
  */
 
 // Light tap - for selections, toggles, small actions
@@ -40,7 +50,11 @@ export const error = () => {
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 };
 
-// Brick placed pattern - custom sequence for placing a brick
+/**
+ * Brick placed pattern - custom sequence for placing a brick.
+ * Heavy thud (brick landing) followed by light tap (settling into place).
+ * The 100ms delay creates the feeling of physical mass and momentum.
+ */
 export const brickPlaced = async () => {
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   setTimeout(() => {

@@ -30,12 +30,25 @@ export default function BrixScreen() {
     { text: "What workout today?", icon: Dumbbell },
   ];
 
+  /**
+   * KEY DESIGN: Optimistic UI pattern for chat.
+   * The user's message appears IMMEDIATELY in the UI before the API responds.
+   * This makes the app feel instant even though AI response takes 1-3 seconds.
+   *
+   * Flow:
+   * 1. Add user message to state immediately (optimistic)
+   * 2. Clear input, show loading indicator
+   * 3. Call API in background
+   * 4. When response arrives, add BRIX message to state
+   * 5. If API fails, add error message (graceful degradation)
+   */
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
     // Haptic feedback when sending message
     Haptics.lightTap();
 
+    // Optimistic UI: add user message immediately before API call
     const userMessage: Message = {
       id: Date.now().toString(),
       text: text.trim(),

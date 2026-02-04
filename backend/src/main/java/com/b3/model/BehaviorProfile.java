@@ -202,6 +202,21 @@ public class BehaviorProfile {
     // BUSINESS LOGIC
     // ========================================================================
 
+    /**
+     * KEY DESIGN: Rich domain model—business logic lives in the entity.
+     *
+     * When a workout is logged, this method cascades through SIX calculations:
+     * 1. updateStreak() - Increment consecutive days or reset to 1
+     * 2. incrementBricks() - +1 total bricks laid
+     * 3. calculateConsistency() - Ratio of bricks to days since signup
+     * 4. updateMotivation() - Derive MOTIVATED/NEUTRAL/STRUGGLING state
+     * 5. updateMomentum() - Derive RISING/STABLE/FALLING trend
+     * 6. adjustTone() - Select appropriate coaching tone
+     *
+     * The service layer just calls logWorkout()—the entity knows its own rules.
+     * This is "Tell, Don't Ask": instead of the service querying state and
+     * making decisions, we tell the entity "a workout happened" and it handles everything.
+     */
     public void logWorkout(LocalDate today, int daysSinceCreation) {
         updateStreak(today);
         incrementBricks();
@@ -272,6 +287,16 @@ public class BehaviorProfile {
         }
     }
 
+    /**
+     * KEY DESIGN: Automatic coaching tone adjustment based on derived state.
+     * Priority order matters:
+     * 1. EMPATHETIC - Struggling users or high fatigue need support first
+     * 2. CHALLENGING - 7+ day streak users are ready to be pushed
+     * 3. CELEBRATORY - Rising momentum deserves recognition
+     * 4. ENCOURAGING - Default positive reinforcement
+     *
+     * We track lastToneChange to potentially avoid jarring tone switches.
+     */
     private void adjustTone() {
         CoachingTone oldTone = currentTone;
 

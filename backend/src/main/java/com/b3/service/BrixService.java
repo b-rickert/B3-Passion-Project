@@ -52,7 +52,13 @@ public class BrixService {
     // ========================================================================
 
     /**
-     * Generate a chat response to user message
+     * Generate a chat response to user message.
+     *
+     * KEY DESIGN: This is the main entry point for BRIX AI coaching.
+     * The flow is: (1) gather user context, (2) determine coaching tone,
+     * (3) generate response via AI or fallback, (4) persist and return.
+     * Context-awareness is key—we don't just respond to the message, we
+     * respond to the message PLUS the user's current state.
      */
     public BrixChatResponse chat(Long profileId, String userMessage) {
         logger.info("BRIX chat for user {}: {}", profileId, userMessage);
@@ -81,7 +87,12 @@ public class BrixService {
     }
 
     /**
-     * Generate response - tries Ollama (Llama) first, then falls back to keywords
+     * Generate response - tries Ollama (Llama) first, then falls back to keywords.
+     *
+     * KEY DESIGN: Graceful degradation pattern. We attempt AI first,
+     * but if Ollama is down or returns empty, we fall back to keyword matching.
+     * This ensures the app ALWAYS responds—users never see an error from BRIX.
+     * The fallback isn't "dumb"—it still uses context (name, streak, energy).
      */
     private String generateResponse(String userMessage, UserProfile user,
                                      BehaviorProfile behavior, DailyLog todaysLog,
@@ -294,6 +305,16 @@ public class BrixService {
         );
     }
 
+    /**
+     * KEY DESIGN: Additive scoring algorithm for workout recommendations.
+     * Each workout starts at 50 points, then gains points for matching:
+     * - User's fitness level (+20)
+     * - Today's energy level (low energy → beginner/short workouts, high → advanced)
+     * - Stress level (high stress → flexibility/short workouts)
+     * - Primary goal alignment (+15)
+     * The highest-scoring workout wins. This creates personalized recommendations
+     * without complex ML—just weighted factors based on current user state.
+     */
     private Workout scoreAndSelectWorkout(List<Workout> workouts, UserProfile user,
                                            DailyLog todaysLog, BehaviorProfile behavior) {
         Map<Workout, Integer> scores = new HashMap<>();
@@ -365,6 +386,23 @@ public class BrixService {
     // TONE ADAPTATION
     // ========================================================================
 
+    /**
+     * KEY DESIGN: Two-layer tone selection algorithm.
+     *
+     * Layer 1 (Priority): Today's emotional state from daily log
+     *   - STRESSED/LOW mood → EMPATHETIC (immediate emotional support)
+     *   - High energy + GREAT mood → CHALLENGING (push them while they're hot)
+     *
+     * Layer 2 (Fallback): Behavioral patterns from behavior profile
+     *   - Milestone hit (7/30 days, personal record) → CELEBRATORY
+     *   - Motivation state STRUGGLING → EMPATHETIC
+     *   - MOTIVATED + RISING momentum → CHALLENGING
+     *
+     * Default: ENCOURAGING (positive but not pushy)
+     *
+     * Key insight: Today's check-in can OVERRIDE historical patterns.
+     * A user with a 30-day streak who logs "stressed" still gets empathy.
+     */
     private BrixMessage.Tone determineTone(BehaviorProfile behavior, DailyLog todaysLog) {
         if (todaysLog != null) {
             if (todaysLog.getMood() == DailyLog.Mood.STRESSED || 

@@ -55,29 +55,37 @@ public class BrickService {
     // ========================================================================
     
     /**
-     * Create a brick after workout completion
+     * Create a brick after workout completion.
+     *
+     * KEY DESIGN: One-brick-per-day rule enforcement.
+     * This is a core philosophy decision: we encourage CONSISTENCY over VOLUME.
+     * Even if a user does 3 workouts in one day, they only get 1 brick.
+     * This prevents "binge and burn" patterns and rewards showing up daily.
+     *
+     * The check happens at the service layer, not the database constraint,
+     * so we can provide a meaningful error message.
      */
     public BrickResponse createBrick(Long sessionId) {
         log.info("Creating brick for session: {}", sessionId);
-        
+
         // Get workout session
         WorkoutSession session = workoutSessionRepository.findById(sessionId)
             .orElseThrow(() -> new ResourceNotFoundException("WorkoutSession", sessionId));
-        
+
         // Check if session is completed
         if (!session.isCompleted()) {
             throw new IllegalStateException("Cannot create brick for incomplete session");
         }
-        
+
         // Get the date from session
         LocalDate brickDate = session.getEndTime().toLocalDate();
-        
-        // Check if brick already exists for this date
+
+        // Check if brick already exists for this date (one brick per day rule)
         boolean exists = brickRepository.existsByUserProfile_ProfileIdAndBrickDate(
             session.getUserProfile().getProfileId(), brickDate);
-        
+
         if (exists) {
-            log.warn("Brick already exists for user {} on {}", 
+            log.warn("Brick already exists for user {} on {}",
                 session.getUserProfile().getProfileId(), brickDate);
             throw new IllegalStateException("Brick already exists for this date");
         }

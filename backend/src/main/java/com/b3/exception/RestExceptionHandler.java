@@ -15,8 +15,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Global exception handler for REST API
- * Catches all exceptions and returns consistent error responses
+ * Global exception handler for REST API.
+ * Catches all exceptions and returns consistent error responses.
+ *
+ * KEY DESIGN: Centralized exception handling using @RestControllerAdvice.
+ * Benefits:
+ * 1. Consistent error format across entire API (status, message, path)
+ * 2. No try-catch blocks scattered in controllers
+ * 3. Logging happens in one place
+ * 4. Validation errors return field-level details for better UX
+ * 5. Unhandled exceptions return generic message (don't leak internals)
  */
 @RestControllerAdvice
 public class RestExceptionHandler {
